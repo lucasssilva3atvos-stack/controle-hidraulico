@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Hidráulica Morro Vermelho</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23E8720C'/%3E%3Cpath d='M32 14 L40 26 L36 26 L36 40 L28 40 L28 26 L24 26 Z' fill='%2312161A'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* ================= TOKENS ================= */
+:root{
+  --font-display:'Barlow Condensed',sans-serif;
+  --font-body:'Inter',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --radius:3px;
+  --radius-lg:6px;
+  --accent:#c8590e;
+  --accent-ink:#ffffff;
+  --accent-soft:#f5dcc4;
+  --steel:#2c5f82;
+  --danger:#a83a2e;
+  --success:#2f7d5c;
+  --warning:#a9760f;
+  --purple:#6b4e8e;
+  --bg:#eef1f3;
+  --bg-sunken:#e2e6e9;
+  --panel:#ffffff;
+  --panel-2:#f7f8f9;
+  --border:#cdd3d8;
+  --border-strong:#a9b1b8;
+  --text:#181c1f;
+  --text-dim:#5c6670;
+  --text-faint:#8b949c;
+  --shadow:0 1px 2px rgba(20,24,28,.06);
+  --transition:.15s ease;
+}
+html[data-theme="dark"]{
+  --accent:#e8790f;
+  --accent-ink:#12161a;
+  --accent-soft:#3a2a17;
+  --steel:#6ea3cc;
+  --danger:#e26a58;
+  --success:#4fbf8f;
+  --warning:#d9a53d;
+  --purple:#a98fd1;
+  --bg:#101317;
+  --bg-sunken:#0b0e11;
+  --panel:#181d22;
+  --panel-2:#1e242a;
+  --border:#2b333a;
+  --border-strong:#3c4650;
+  --text:#e8ebee;
+  --text-dim:#9aa5b0;
+  --text-faint:#697079;
+  --shadow:0 1px 3px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  font-size:14px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  transition:background var(--transition),color var(--transition);
+}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:700;margin:0;letter-spacing:.2px;}
+a{color:inherit;}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit;}
+::selection{background:var(--accent);color:var(--accent-ink);}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
+
+/* ================= LAYOUT ================= */
+#app{display:none;min-height:100vh;}
+#app.ready{display:flex;}
+
+.sidebar{
+  width:216px;flex:none;background:var(--panel-2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;position:sticky;top:0;height:100vh;
+}
+.brand{
+  display:flex;align-items:center;gap:10px;padding:16px 14px;border-bottom:1px solid var(--border);
+}
+.brand-mark{
+  width:34px;height:34px;flex:none;border-radius:6px;background:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+}
+.brand-mark svg{width:20px;height:20px;}
+.brand-text{line-height:1.15;}
+.brand-text .b1{font-family:var(--font-display);font-weight:800;font-size:16px;letter-spacing:.3px;}
+.brand-text .b2{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-faint);}
+
+.nav{flex:1;overflow-y:auto;padding:10px 8px;}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--radius);
+  color:var(--text-dim);cursor:pointer;font-weight:600;font-size:13.5px;margin-bottom:2px;
+  border-left:3px solid transparent;transition:background var(--transition),color var(--transition);
+}
+.nav-item svg{width:17px;height:17px;flex:none;opacity:.85;}
+.nav-item:hover{background:var(--bg-sunken);color:var(--text);}
+.nav-item.active{background:var(--accent-soft);color:var(--accent);border-left-color:var(--accent);}
+.nav-section{font-size:10px;text-transform:uppercase;letter-spacing:1.1px;color:var(--text-faint);padding:14px 10px 6px;}
+
+.sidebar-foot{padding:12px;border-top:1px solid var(--border);font-size:12px;color:var(--text-faint);}
+.limit-chip{display:flex;justify-content:space-between;background:var(--bg-sunken);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;}
+.limit-chip b{color:var(--warning);font-family:var(--font-mono);}
+
+.main{flex:1;min-width:0;display:flex;flex-direction:column;}
+.topbar{
+  position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;padding:10px 18px;
+}
+.searchbox{
+  flex:1;max-width:440px;display:flex;align-items:center;gap:8px;background:var(--bg-sunken);
+  border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;
+}
+.searchbox input{background:transparent;border:0;outline:0;flex:1;color:var(--text);}
+.searchbox svg{width:15px;height:15px;color:var(--text-faint);flex:none;}
+.search-results{
+  position:absolute;top:52px;left:18px;right:18px;max-width:440px;background:var(--panel);
+  border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:0 8px 24px rgba(0,0,0,.18);
+  max-height:340px;overflow-y:auto;z-index:30;
+}
+.search-hit{padding:9px 12px;border-bottom:1px solid var(--border);cursor:pointer;}
+.search-hit:last-child{border-bottom:0;}
+.search-hit:hover{background:var(--bg-sunken);}
+.search-hit .sh-t{font-weight:600;font-size:13px;}
+.search-hit .sh-s{font-size:11.5px;color:var(--text-faint);}
+
+.topbar-spacer{flex:1;}
+.icon-btn{
+  width:34px;height:34px;border-radius:var(--radius);border:1px solid var(--border);background:var(--panel-2);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-dim);flex:none;
+}
+.icon-btn:hover{color:var(--text);border-color:var(--border-strong);}
+.icon-btn svg{width:16px;height:16px;}
+.user-chip{display:flex;align-items:center;gap:8px;padding:5px 10px 5px 5px;border:1px solid var(--border);border-radius:20px;background:var(--panel-2);cursor:pointer;}
+.user-avatar{width:24px;height:24px;border-radius:50%;background:var(--steel);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:none;}
+.user-chip span{font-size:12.5px;font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+.view{padding:20px 22px 60px;max-width:1360px;width:100%;margin:0 auto;}
+.view-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:18px;flex-wrap:wrap;}
+.view-head h1{font-size:26px;}
+.view-head .eyebrow{font-size:11px;color:var(--accent);letter-spacing:1px;text-transform:uppercase;font-weight:700;margin-bottom:2px;}
+.view-actions{display:flex;gap:8px;flex-wrap:wrap;}
+
+/* ================= COMPONENTS ================= */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;padding:9px 15px;border-radius:var(--radius);
+  border:1px solid var(--border-strong);background:var(--panel-2);color:var(--text);font-weight:600;
+  font-size:13px;cursor:pointer;transition:all var(--transition);white-space:nowrap;
+}
+.btn svg{width:15px;height:15px;}
+.btn:hover{border-color:var(--text-dim);}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+.btn-primary:hover{filter:brightness(1.08);}
+.btn-danger{background:var(--danger);border-color:var(--danger);color:#fff;}
+.btn-danger:hover{filter:brightness(1.08);}
+.btn-ghost{background:transparent;border-color:transparent;}
+.btn-ghost:hover{background:var(--bg-sunken);}
+.btn-sm{padding:6px 10px;font-size:12px;}
+.btn-block{width:100%;justify-content:center;}
+
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);}
+.card-pad{padding:16px 18px;}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--border);}
+.panel-head h3{font-size:15px;font-weight:700;}
+
+.grid{display:grid;gap:14px;}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.grid-2{grid-template-columns:repeat(2,1fr);}
+@media(max-width:1080px){.grid-4{grid-template-columns:repeat(2,1fr);}.grid-3{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:620px){.grid-4,.grid-3,.grid-2{grid-template-columns:1fr;}}
+
+.stat{padding:15px 16px;border-left:3px solid var(--accent);}
+.stat .st-label{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-faint);font-weight:600;}
+.stat .st-value{font-family:var(--font-display);font-size:28px;font-weight:800;margin-top:3px;}
+.stat .st-sub{font-size:11.5px;color:var(--text-dim);margin-top:2px;}
+.stat.st-blue{border-color:var(--steel);}
+.stat.st-green{border-color:var(--success);}
+.stat.st-red{border-color:var(--danger);}
+.stat.st-purple{border-color:var(--purple);}
+.stat.st-warn{border-color:var(--warning);}
+
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:700;white-space:nowrap;}
+.badge::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;}
+.badge-disponivel{background:#e4f3ea;color:var(--success);}
+.badge-aplicado{background:#e2edf7;color:var(--steel);}
+.badge-manutencao{background:#faf1da;color:var(--warning);}
+.badge-aguardando_pecas{background:#fbe8d9;color:#b8621a;}
+.badge-reparado{background:#efe6f6;color:var(--purple);}
+.badge-descartado{background:#f8e2df;color:var(--danger);}
+.badge-baixado{background:var(--bg-sunken);color:var(--text-faint);}
+html[data-theme="dark"] .badge-disponivel{background:#123322;}
+html[data-theme="dark"] .badge-aplicado{background:#152633;}
+html[data-theme="dark"] .badge-manutencao{background:#332a10;}
+html[data-theme="dark"] .badge-aguardando_pecas{background:#332212;}
+html[data-theme="dark"] .badge-reparado{background:#291f36;}
+html[data-theme="dark"] .badge-descartado{background:#331815;}
+html[data-theme="dark"] .badge-baixado{background:#20262c;}
+
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--text-faint);padding:9px 12px;border-bottom:1px solid var(--border);font-weight:700;}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tbody tr{cursor:pointer;transition:background var(--transition);}
+tbody tr:hover{background:var(--bg-sunken);}
+.table-wrap{overflow-x:auto;}
+.mono{font-family:var(--font-mono);font-size:12.5px;}
+.empty{padding:44px 20px;text-align:center;color:var(--text-faint);}
+.empty svg{width:34px;height:34px;margin-bottom:10px;opacity:.5;}
+
+.field{margin-bottom:13px;}
+.field label{display:block;font-size:12px;font-weight:700;margin-bottom:5px;color:var(--text-dim);}
+.field .hint{font-size:11px;color:var(--text-faint);margin-top:4px;}
+input[type=text],input[type=number],input[type=date],input[type=email],input[type=password],input[type=file],select,textarea{
+  width:100%;padding:9px 11px;border-radius:var(--radius);border:1px solid var(--border-strong);
+  background:var(--panel-2);color:var(--text);outline:0;transition:border-color var(--transition);
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);}
+textarea{resize:vertical;min-height:64px;}
+.row{display:flex;gap:12px;flex-wrap:wrap;}
+.row > .field{flex:1;min-width:160px;}
+.chip-row{display:flex;gap:6px;flex-wrap:wrap;}
+.filter-chip{padding:5px 11px;border:1px solid var(--border-strong);border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-dim);background:var(--panel-2);}
+.filter-chip.active{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+
+.modal-bg{position:fixed;inset:0;background:rgba(10,12,14,.55);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px;}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);width:100%;max-width:640px;max-height:92vh;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,.3);}
+.modal.modal-lg{max-width:880px;}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--panel);z-index:2;}
+.modal-body{padding:18px;}
+.modal-foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 18px;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--panel);}
+
+.toast-wrap{position:fixed;bottom:18px;right:18px;z-index:200;display:flex;flex-direction:column;gap:8px;}
+.toast{background:var(--panel);border:1px solid var(--border);border-left:4px solid var(--success);box-shadow:0 8px 22px rgba(0,0,0,.2);border-radius:var(--radius);padding:11px 15px;font-size:13px;font-weight:600;min-width:220px;}
+.toast.err{border-left-color:var(--danger);}
+.toast.warn{border-left-color:var(--warning);}
+
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:16px;flex-wrap:wrap;}
+.tab{padding:9px 14px;font-weight:700;font-size:13px;color:var(--text-faint);cursor:pointer;border-bottom:2px solid transparent;}
+.tab.active{color:var(--accent);border-color:var(--accent);}
+
+.alert{display:flex;gap:10px;padding:12px 14px;border-radius:var(--radius);border:1px solid var(--warning);background:var(--accent-soft);align-items:flex-start;}
+.alert svg{width:18px;height:18px;flex:none;color:var(--warning);margin-top:1px;}
+.alert.danger{border-color:var(--danger);}
+.alert.danger svg{color:var(--danger);}
+.alert b{display:block;margin-bottom:2px;}
+
+.gauge{height:9px;border-radius:6px;background:var(--bg-sunken);overflow:hidden;border:1px solid var(--border);}
+.gauge > div{height:100%;border-radius:6px;background:var(--success);transition:width .4s ease;}
+
+/* Timeline */
+.timeline{position:relative;padding-left:26px;}
+.timeline::before{content:'';position:absolute;left:8px;top:4px;bottom:4px;width:2px;background:var(--border-strong);}
+.tl-item{position:relative;padding-bottom:22px;}
+.tl-item:last-child{padding-bottom:0;}
+.tl-dot{position:absolute;left:-26px;top:2px;width:17px;height:17px;border-radius:50%;background:var(--panel);border:3px solid var(--steel);}
+.tl-item.type-descarte .tl-dot{border-color:var(--danger);}
+.tl-item.type-manutencao .tl-dot{border-color:var(--warning);}
+.tl-item.type-retirada .tl-dot{border-color:var(--text-faint);}
+.tl-item.type-entrada .tl-dot{border-color:var(--success);}
+.tl-card{background:var(--panel-2);border:1px solid var(--border);border-radius:var(--radius);padding:11px 13px;}
+.tl-head{display:flex;justify-content:space-between;gap:10px;font-weight:700;font-size:13px;}
+.tl-date{font-size:11.5px;color:var(--text-faint);font-weight:600;}
+.tl-body{font-size:12.5px;color:var(--text-dim);margin-top:4px;}
+
+/* Sidebar mobile / bottom nav */
+.bottom-nav{display:none;}
+.hamburger{display:none;}
+
+@media(max-width:880px){
+  .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:60;transform:translateX(-100%);transition:transform .2s ease;}
+  .sidebar.open{transform:translateX(0);box-shadow:20px 0 40px rgba(0,0,0,.3);}
+  .hamburger{display:flex;}
+  .view{padding:16px 14px 90px;}
+  .topbar{padding:10px 12px;}
+  .searchbox{max-width:none;}
+}
+
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:
+  radial-gradient(circle at 20% 20%, var(--accent-soft), transparent 55%), var(--bg);padding:16px;}
+.login-card{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:0 20px 50px rgba(0,0,0,.15);padding:30px 26px;}
+.login-logo{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:22px;text-align:center;}
+.login-logo .brand-mark{width:52px;height:52px;}
+.login-logo .brand-mark svg{width:30px;height:30px;}
+.login-logo h1{font-size:22px;}
+.login-logo p{font-size:11.5px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+.login-err{font-size:12.5px;color:var(--danger);margin-top:8px;min-height:16px;}
+.loader{display:flex;align-items:center;justify-content:center;min-height:100vh;color:var(--text-faint);font-family:var(--font-display);font-size:18px;letter-spacing:.5px;}
+.spin{width:16px;height:16px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--accent);animation:sp .7s linear infinite;margin-right:10px;}
+@keyframes sp{to{transform:rotate(360deg);}}
+
+.qr-box{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px;background:#fff;border-radius:var(--radius);}
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:8px;}
+.photo-grid img{width:100%;height:88px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);}
+.photo-grid .ph-del{position:relative;}
+.photo-grid .ph-del button{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.6);color:#fff;border:0;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:12px;line-height:1;}
+.dropzone{border:1.5px dashed var(--border-strong);border-radius:var(--radius);padding:18px;text-align:center;color:var(--text-faint);font-size:12.5px;cursor:pointer;}
+.dropzone:hover{border-color:var(--accent);color:var(--accent);}
+
+@media print{
+  body *{visibility:hidden;}
+  #laudo-print, #laudo-print *{visibility:visible;}
+  #laudo-print{position:absolute;left:0;top:0;width:100%;padding:0;}
+  .no-print{display:none!important;}
+}
+.laudo{font-family:var(--font-body);color:#111;background:#fff;padding:6px;}
+.laudo h2{font-family:var(--font-display);font-size:20px;border-bottom:3px solid #c8590e;padding-bottom:8px;margin-bottom:14px;}
+.laudo h4{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:#c8590e;margin:18px 0 6px;border-bottom:1px solid #ddd;padding-bottom:4px;}
+.laudo table{font-size:12px;}
+.laudo td,.laudo th{border-color:#ddd;color:#111;}
+.laudo-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 20px;font-size:12.5px;}
+</style>
+</head>
+<body>
+
+<div id="boot" class="loader"><span class="spin"></span> Carregando Hidráulica Morro Vermelho…</div>
+
+<!-- LOGIN -->
+<div id="login-screen" style="display:none">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 L17 10 L14 10 L14 18 L10 18 L10 10 L7 10 Z" fill="white"/></svg>
+        </div>
+        <h1>Hidráulica Morro Vermelho</h1>
+        <p>Monitoramento inteligente de componentes hidráulicos</p>
+      </div>
+      <form id="login-form">
+        <div class="field"><label>E-mail</label><input type="email" id="login-email" required autocomplete="username"></div>
+        <div class="field"><label>Senha</label><input type="password" id="login-pass" required autocomplete="current-password"></div>
+        <button class="btn btn-primary btn-block" type="submit">Entrar</button>
+        <div class="login-err" id="login-err"></div>
+      </form>
+      <div class="hint" style="margin-top:14px;text-align:center;color:var(--text-faint);font-size:11.5px;">
+        Os acessos da equipe são criados pelo administrador em Supabase → Authentication.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 L17 10 L14 10 L14 18 L10 18 L10 10 L7 10 Z" fill="white"/></svg></div>
+      <div class="brand-text"><div class="b1">Morro Vermelho</div><div class="b2">Sist. Hidráulico</div></div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="sidebar-foot">
+      <div class="limit-chip"><span>Limite descarte</span><b id="limite-chip">70%</b></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="hamburger icon-btn" id="btn-hamburger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></div>
+      <div style="position:relative;flex:1;max-width:440px;">
+        <div class="searchbox">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input id="global-search" placeholder="Buscar agregado, frota, modelo, peça…" autocomplete="off">
+        </div>
+        <div class="search-results" id="search-results" style="display:none"></div>
+      </div>
+      <div class="topbar-spacer"></div>
+      <div class="icon-btn" id="btn-theme" title="Alternar modo dia/noite"></div>
+      <div class="user-chip" id="user-chip">
+        <div class="user-avatar" id="user-avatar">–</div>
+        <span id="user-email">—</span>
+      </div>
+    </div>
+    <div class="view" id="view"></div>
+  </div>
+
+  <nav class="bottom-nav" id="bottom-nav"></nav>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+/* ================= CONFIG SUPABASE ================= */
+const SUPABASE_URL = 'https://racoxwwmnvqmgkhjouau.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhY294d3dtbnZxbWdraGpvdWF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkwOTExNjEsImV4cCI6MjEwNDY2NzE2MX0.3NIEgbWZQvB_5SiBzed1jodqAmz37oN_dNluxZfcdJY';
+const BUCKET = 'hmv-fotos';
+
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ================= STATE ================= */
+const S = {
+  user:null,
+  theme: localStorage.getItem('hmv-theme') || 'light',
+  tipos:[], modelos:[], frotas:[], maquinas:[], frentes:[], pecas:[], componentes:[],
+  limitePercent:70,
+  route:'dashboard'
+};
+
+/* ================= ICONS ================= */
+const ICO = {
+  dashboard:'<path d="M3 13h4v8H3zM10 3h4v18h-4zM17 8h4v13h-4z"/>',
+  componentes:'<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 4v16M4 9h16"/>',
+  aplicar:'<path d="M4 19h16M6 15l6-11 6 11M8 15h8"/>',
+  retirar:'<path d="M9 14l-5-5 5-5M4 9h11a5 5 0 010 10h-1"/>',
+  manutencao:'<path d="M14.7 6.3a4 4 0 00-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 005.4-5.4l-2.3 2.3-2-2z"/>',
+  pecas:'<path d="M20 12V7a2 2 0 00-1-1.7l-6-3.5a2 2 0 00-2 0l-6 3.5A2 2 0 004 7v10a2 2 0 001 1.7l6 3.5a2 2 0 002 0l3-1.7M12 22V12M20 7l-8 5-8-5M16 16l3 3 5-5"/>',
+  descarte:'<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/>',
+  frotas:'<rect x="1" y="7" width="15" height="10" rx="1"/><path d="M16 10h3l3 3v4h-6z"/><circle cx="6" cy="19" r="1.6"/><circle cx="17.5" cy="19" r="1.6"/>',
+  config:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.9 2.9l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.6V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.9-2.9l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.6-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.6-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.9-2.9l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.6V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.6 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.9 2.9l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.6 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.6 1z"/>',
+  importar:'<path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/>',
+  moon:'<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>',
+  logout:'<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>',
+  qr:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM19 14h2v2h-2zM14 19h2v2h-2zM19 19h2v2h-2z"/>',
+  warn:'<path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  check:'<path d="M20 6L9 17l-5-5"/>',
+  x:'<path d="M18 6L6 18M6 6l12 12"/>',
+  camera:'<path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>',
+  print:'<path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/>',
+  trash:'<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/>',
+  edit:'<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 013 3L12 15l-4 1 1-4z"/>',
+  back:'<path d="M19 12H5M12 19l-7-7 7-7"/>',
+  down:'<path d="M12 4v13m0 0l-5-5m5 5l5-5M5 21h14"/>'
+};
+const svgi=(name,extra='')=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" ${extra}>${ICO[name]||''}</svg>`;
+
+/* ================= UTIL ================= */
+const $ = (s,el=document)=>el.querySelector(s);
+const $$ = (s,el=document)=>[...el.querySelectorAll(s)];
+const fmtMoney = n => (Number(n)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const fmtDate = d => d ? new Date(d+'T00:00:00').toLocaleDateString('pt-BR') : '—';
+const fmtDateTime = d => d ? new Date(d).toLocaleString('pt-BR') : '—';
+const uid = ()=> crypto.randomUUID();
+const escapeHtml = s => (s===null||s===undefined) ? '' : String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(msg,type=''){
+  const el=document.createElement('div');
+  el.className='toast'+(type?' '+type:'');
+  el.textContent=msg;
+  $('#toast-wrap').appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300);},3200);
+}
+const STATUS_LABEL = {disponivel:'Disponível',aplicado:'Aplicado',manutencao:'Em manutenção',aguardando_pecas:'Aguard. peças',reparado:'Reparado',descartado:'Descartado',baixado:'Baixado'};
+
+async function logHistorico(tabela,registro_id,acao,antes,depois){
+  try{
+    await sb.from('historico').insert({tabela,registro_id,usuario:S.user?.email||'—',acao,dados_anteriores:antes||null,dados_novos:depois||null});
+  }catch(e){/* auditoria não deve travar o fluxo */}
+}
+
+/* ================= THEME ================= */
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme', S.theme);
+  $('#btn-theme').innerHTML = svgi(S.theme==='dark' ? 'sun' : 'moon');
+  localStorage.setItem('hmv-theme', S.theme);
+}
+$('#btn-theme')?.addEventListener('click', ()=>{ S.theme = S.theme==='dark'?'light':'dark'; applyTheme(); });
+
+/* ================= AUTH ================= */
+$('#login-form').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  $('#login-err').textContent='';
+  const email = $('#login-email').value.trim();
+  const password = $('#login-pass').value;
+  const {data,error} = await sb.auth.signInWithPassword({email,password});
+  if(error){ $('#login-err').textContent = 'Não foi possível entrar: ' + error.message; return; }
+  S.user = data.user;
+  await boot();
+});
+
+async function doLogout(){
+  await sb.auth.signOut();
+  location.hash='';
+  location.reload();
+}
+
+/* ================= NAV DEFINITION ================= */
+const NAV = [
+  {id:'dashboard', label:'Dashboard', icon:'dashboard'},
+  {id:'componentes', label:'Componentes', icon:'componentes'},
+  {id:'aplicar', label:'Aplicar', icon:'aplicar'},
+  {id:'retirar', label:'Retirar', icon:'retirar'},
+  {id:'manutencao', label:'Manutenção', icon:'manutencao'},
+  {id:'pecas', label:'Peças', icon:'pecas'},
+  {id:'descartes', label:'Descartes', icon:'descarte'},
+  {id:'frotas', label:'Frotas', icon:'frotas'},
+  {id:'importar', label:'Importar dados', icon:'importar'},
+  {id:'config', label:'Configurações', icon:'config'},
+];
+function renderNav(){
+  const html = NAV.map(n=>`<div class="nav-item ${S.route===n.id?'active':''}" data-route="${n.id}">${svgi(n.icon)}<span>${n.label}</span></div>`).join('');
+  $('#nav').innerHTML = html;
+  $('#bottom-nav').innerHTML = '';
+  $$('#nav .nav-item').forEach(el=>el.addEventListener('click',()=>{ location.hash = '#'+el.dataset.route; $('#sidebar').classList.remove('open'); }));
+}
+$('#btn-hamburger').addEventListener('click', ()=> $('#sidebar').classList.toggle('open'));
+
+/* ================= DATA LOADERS ================= */
+async function loadLookups(){
+  const [t,m,f,mq,fr,pc,cfg] = await Promise.all([
+    sb.from('tipos_componentes').select('*').order('nome'),
+    sb.from('modelos_componentes').select('*').order('nome'),
+    sb.from('frotas').select('*').order('nome'),
+    sb.from('maquinas').select('*').order('nome'),
+    sb.from('frentes').select('*').order('nome'),
+    sb.from('pecas').select('*').order('descricao'),
+    sb.from('configuracoes').select('*').eq('chave','limite_descarte_percentual').maybeSingle(),
+  ]);
+  S.tipos = t.data||[]; S.modelos = m.data||[]; S.frotas = f.data||[]; S.maquinas = mq.data||[]; S.frentes = fr.data||[]; S.pecas = pc.data||[];
+  S.limitePercent = cfg.data ? Number(cfg.data.valor) : 70;
+  $('#limite-chip').textContent = S.limitePercent+'%';
+}
+async function loadComponentes(){
+  const {data,error} = await sb.from('componentes').select('*').order('created_at',{ascending:false});
+  if(error){ toast('Erro ao carregar componentes: '+error.message,'err'); return; }
+  S.componentes = data||[];
+}
+const tipoNome = id => S.tipos.find(t=>t.id===id)?.nome || '—';
+const modeloNome = id => S.modelos.find(m=>m.id===id)?.nome || '—';
+const frotaNome = id => S.frotas.find(f=>f.id===id)?.nome || '—';
+const maquinaNome = id => S.maquinas.find(m=>m.id===id)?.nome || '—';
+const frenteNome = id => S.frentes.find(f=>f.id===id)?.nome || '—';
+
+/* ================= ROUTER ================= */
+window.addEventListener('hashchange', route);
+function route(){
+  const hash = location.hash.replace('#','') || 'dashboard';
+  const [base, param] = hash.split('/');
+  S.route = base;
+  renderNav();
+  const view = $('#view');
+  view.innerHTML = '';
+  try{
+    if(base==='dashboard') renderDashboard(view);
+    else if(base==='componentes') renderComponentes(view);
+    else if(base==='agregado') renderAgregadoDetalhe(view, param);
+    else if(base==='aplicar') renderAplicar(view);
+    else if(base==='retirar') renderRetirar(view);
+    else if(base==='manutencao') renderManutencaoList(view);
+    else if(base==='manutencao-novo') renderManutencaoForm(view, param);
+    else if(base==='pecas') renderPecas(view);
+    else if(base==='descartes') renderDescartesList(view);
+    else if(base==='descarte-novo') renderDescarteForm(view, param);
+    else if(base==='frotas') renderFrotas(view);
+    else if(base==='importar') renderImportar(view);
+    else if(base==='config') renderConfig(view);
+    else renderDashboard(view);
+  }catch(err){
+    console.error(err);
+    view.innerHTML = `<div class="alert danger">${svgi('warn')}<div><b>Erro ao renderizar a tela</b>${escapeHtml(err.message)}</div></div>`;
+  }
+}
+
+/* ================= VIEW HEAD HELPER ================= */
+function viewHead(eyebrow,title,actionsHtml=''){
+  return `<div class="view-head"><div><div class="eyebrow">${eyebrow}</div><h1>${title}</h1></div><div class="view-actions">${actionsHtml}</div></div>`;
+}
+
+/* ================= DASHBOARD ================= */
+async function renderDashboard(view){
+  view.innerHTML = `<div class="loader" style="min-height:200px"><span class="spin"></span>Carregando indicadores…</div>`;
+  const [{data:manut},{data:desc}] = await Promise.all([
+    sb.from('manutencoes').select('*'),
+    sb.from('descartes').select('*'),
+  ]);
+  const comps = S.componentes;
+  const byStatus = k => comps.filter(c=>c.status===k).length;
+  const horasTotais = comps.reduce((a,c)=>a+Number(c.horas_acumuladas||0),0);
+  const mediaHoras = comps.length ? (horasTotais/comps.length) : 0;
+  const maior = comps.slice().sort((a,b)=>b.horas_acumuladas-a.horas_acumuladas)[0];
+  const menor = comps.filter(c=>c.horas_acumuladas>0).slice().sort((a,b)=>a.horas_acumuladas-b.horas_acumuladas)[0];
+  const custoTotalManut = (manut||[]).reduce((a,m)=>a+Number(m.custo_total||0),0);
+  const thisMonth = new Date().toISOString().slice(0,7);
+  const custoMes = (manut||[]).filter(m=>String(m.data||'').startsWith(thisMonth)).reduce((a,m)=>a+Number(m.custo_total||0),0);
+  const custoMedioReparo = (manut&&manut.length) ? custoTotalManut/manut.length : 0;
+
+  // maiores custos por componente
+  const custoPorComp = {};
+  (manut||[]).forEach(m=>{ custoPorComp[m.componente_id]=(custoPorComp[m.componente_id]||0)+Number(m.custo_total||0); });
+  const topCusto = Object.entries(custoPorComp).sort((a,b)=>b[1]-a[1]).slice(0,5)
+    .map(([id,v])=>({comp:comps.find(c=>c.id===id), v}));
+
+  const motivos = {};
+  (desc||[]).forEach(d=>{ const k=d.motivo||'Não informado'; motivos[k]=(motivos[k]||0)+1; });
+  const topMotivos = Object.entries(motivos).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxMotivo = Math.max(1,...topMotivos.map(m=>m[1]));
+  const maxCusto = Math.max(1,...topCusto.map(t=>t.v));
+
+  view.innerHTML = `
+  ${viewHead('Visão geral','Dashboard gerencial')}
+  <div class="grid grid-4" style="margin-bottom:16px">
+    <div class="card stat"><div class="st-label">Total de componentes</div><div class="st-value">${comps.length}</div><div class="st-sub">${byStatus('disponivel')} disponíveis</div></div>
+    <div class="card stat st-blue"><div class="st-label">Aplicados agora</div><div class="st-value">${byStatus('aplicado')}</div><div class="st-sub">em máquinas ativas</div></div>
+    <div class="card stat st-warn"><div class="st-label">Em manutenção</div><div class="st-value">${byStatus('manutencao')+byStatus('aguardando_pecas')}</div><div class="st-sub">${byStatus('aguardando_pecas')} aguardando peças</div></div>
+    <div class="card stat st-red"><div class="st-label">Descartados</div><div class="st-value">${byStatus('descartado')}</div><div class="st-sub">${desc?.length||0} laudos emitidos</div></div>
+  </div>
+  <div class="grid grid-3" style="margin-bottom:16px">
+    <div class="card stat st-green"><div class="st-label">Horas acumuladas (frota)</div><div class="st-value">${horasTotais.toFixed(0)}h</div><div class="st-sub">Média ${mediaHoras.toFixed(0)}h por componente</div></div>
+    <div class="card stat st-purple"><div class="st-label">Custo total de manutenção</div><div class="st-value">${fmtMoney(custoTotalManut)}</div><div class="st-sub">${fmtMoney(custoMes)} este mês</div></div>
+    <div class="card stat"><div class="st-label">Custo médio por reparo</div><div class="st-value">${fmtMoney(custoMedioReparo)}</div><div class="st-sub">${manut?.length||0} manutenções registradas</div></div>
+  </div>
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="panel-head"><h3>Maiores custos de manutenção por agregado</h3></div>
+      <div class="card-pad">
+        ${topCusto.length? topCusto.map(t=>`
+          <div style="margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;font-size:12.5px;font-weight:600;margin-bottom:4px">
+              <span>Agregado ${escapeHtml(t.comp?.agregado_numero||'?')}</span><span class="mono">${fmtMoney(t.v)}</span>
+            </div>
+            <div class="gauge"><div style="width:${(t.v/maxCusto*100).toFixed(0)}%;background:var(--purple)"></div></div>
+          </div>`).join('') : `<div class="empty">Sem manutenções registradas ainda.</div>`}
+      </div>
+    </div>
+    <div class="card">
+      <div class="panel-head"><h3>Vida útil — destaques</h3></div>
+      <div class="card-pad">
+        <div class="row">
+          <div class="field" style="flex:1"><label>Maior vida útil</label>
+            <div style="font-family:var(--font-display);font-size:20px;font-weight:800">${maior?maior.horas_acumuladas+'h':'—'}</div>
+            <div class="hint">${maior?('Agregado '+maior.agregado_numero):''}</div>
+          </div>
+          <div class="field" style="flex:1"><label>Menor vida útil (ativo)</label>
+            <div style="font-family:var(--font-display);font-size:20px;font-weight:800">${menor?menor.horas_acumuladas+'h':'—'}</div>
+            <div class="hint">${menor?('Agregado '+menor.agregado_numero):''}</div>
+          </div>
+        </div>
+        <h4 style="font-size:12px;text-transform:uppercase;color:var(--text-faint);margin:14px 0 8px">Motivos de descarte mais frequentes</h4>
+        ${topMotivos.length? topMotivos.map(([k,v])=>`
+          <div style="margin-bottom:9px">
+            <div style="display:flex;justify-content:space-between;font-size:12.5px;font-weight:600;margin-bottom:4px"><span>${escapeHtml(k)}</span><span class="mono">${v}</span></div>
+            <div class="gauge"><div style="width:${(v/maxMotivo*100).toFixed(0)}%;background:var(--danger)"></div></div>
+          </div>`).join('') : `<div class="empty">Nenhum descarte registrado.</div>`}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ================= COMPONENTES ================= */
+function renderComponentes(view){
+  let statusFilter='';
+  const draw = ()=>{
+    const q = ($('#comp-search')?.value||'').toLowerCase();
+    let list = S.componentes;
+    if(statusFilter) list = list.filter(c=>c.status===statusFilter);
+    if(q) list = list.filter(c=> (c.agregado_numero+tipoNome(c.tipo_id)+modeloNome(c.modelo_id)).toLowerCase().includes(q));
+    $('#comp-tbody').innerHTML = list.length ? list.map(c=>`
+      <tr data-id="${c.id}">
+        <td class="mono">${escapeHtml(c.agregado_numero)}</td>
+        <td>${escapeHtml(tipoNome(c.tipo_id))}</td>
+        <td>${escapeHtml(modeloNome(c.modelo_id))}</td>
+        <td><span class="badge badge-${c.status}">${STATUS_LABEL[c.status]}</span></td>
+        <td class="mono">${Number(c.horas_acumuladas||0).toFixed(0)}h</td>
+        <td class="mono">${fmtMoney(c.valor_referencia)}</td>
+      </tr>`).join('') : `<tr><td colspan="6"><div class="empty">${svgi('componentes')}<div>Nenhum componente encontrado.</div></div></td></tr>`;
+    $$('#comp-tbody tr[data-id]').forEach(tr=>tr.addEventListener('click',()=> location.hash='#agregado/'+tr.dataset.id));
+  };
+
+  view.innerHTML = `
+  ${viewHead('Cadastro','Componentes', `<button class="btn btn-primary" id="btn-novo-comp">${svgi('plus')}Novo componente</button>`)}
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-pad" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <div class="searchbox" style="max-width:320px;flex:1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="comp-search" placeholder="Buscar por agregado, tipo ou modelo…"></div>
+      <div class="chip-row" id="status-chips">
+        <div class="filter-chip active" data-s="">Todos</div>
+        ${Object.entries(STATUS_LABEL).map(([k,v])=>`<div class="filter-chip" data-s="${k}">${v}</div>`).join('')}
+      </div>
+    </div>
+  </div>
+  <div class="card"><div class="table-wrap"><table>
+    <thead><tr><th>Agregado</th><th>Tipo</th><th>Modelo</th><th>Status</th><th>Horas</th><th>Valor ref.</th></tr></thead>
+    <tbody id="comp-tbody"></tbody>
+  </table></div></div>`;
+
+  $('#comp-search').addEventListener('input', draw);
+  $$('#status-chips .filter-chip').forEach(ch=>ch.addEventListener('click',()=>{
+    $$('#status-chips .filter-chip').forEach(c=>c.classList.remove('active')); ch.classList.add('active');
+    statusFilter = ch.dataset.s; draw();
+  }));
+  $('#btn-novo-comp').addEventListener('click', ()=>openComponenteModal());
+  draw();
+}
+
+function openComponenteModal(){
+  const bg=document.createElement('div'); bg.className='modal-bg';
+  bg.innerHTML = `<div class="modal">
+    <div class="modal-head"><h3>Novo componente</h3><div class="icon-btn" id="m-close">${svgi('x')}</div></div>
+    <div class="modal-body">
+      <div class="row">
+        <div class="field"><label>Número do agregado *</label><input id="f-agregado" placeholder="Ex: 2030"></div>
+        <div class="field"><label>Data de entrada</label><input type="date" id="f-entrada" value="${new Date().toISOString().slice(0,10)}"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Tipo do componente *</label><select id="f-tipo"><option value="">Selecione…</option>${S.tipos.map(t=>`<option value="${t.id}">${escapeHtml(t.nome)}</option>`).join('')}</select></div>
+        <div class="field"><label>Modelo</label><select id="f-modelo"><option value="">Selecione…</option></select></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Código do componente</label><input id="f-codigo" placeholder="Opcional"></div>
+        <div class="field"><label>Valor de referência (R$)</label><input type="number" id="f-valor" step="0.01" placeholder="0,00"></div>
+      </div>
+      <div class="field"><label>Observações</label><textarea id="f-obs"></textarea></div>
+    </div>
+    <div class="modal-foot"><button class="btn" id="m-cancel">Cancelar</button><button class="btn btn-primary" id="m-save">${svgi('check')}Salvar</button></div>
+  </div>`;
+  document.body.appendChild(bg);
+  const close=()=>bg.remove();
+  $('#m-close',bg).onclick=close; $('#m-cancel',bg).onclick=close;
+  $('#f-tipo',bg).addEventListener('change', ()=>{
+    const tid=$('#f-tipo',bg).value;
+    const opts = S.modelos.filter(m=>m.tipo_id===tid);
+    $('#f-modelo',bg).innerHTML = '<option value="">Selecione…</option>'+opts.map(m=>`<option value="${m.id}" data-valor="${m.valor_referencia}">${escapeHtml(m.nome)}</option>`).join('');
+  });
+  $('#f-modelo',bg).addEventListener('change', ()=>{
+    const opt = $('#f-modelo',bg).selectedOptions[0];
+    if(opt && opt.dataset.valor && !$('#f-valor',bg).value) $('#f-valor',bg).value = opt.dataset.valor;
+  });
+  $('#m-save',bg).addEventListener('click', async ()=>{
+    const agregado_numero = $('#f-agregado',bg).value.trim();
+    const tipo_id = $('#f-tipo',bg).value;
+    if(!agregado_numero){ toast('Informe o número do agregado.','err'); return; }
+    if(!tipo_id){ toast('Selecione o tipo do componente.','err'); return; }
+    const payload = {
+      agregado_numero, tipo_id,
+      modelo_id: $('#f-modelo',bg).value || null,
+      codigo: $('#f-codigo',bg).value || null,
+      data_entrada: $('#f-entrada',bg).value || new Date().toISOString().slice(0,10),
+      valor_referencia: Number($('#f-valor',bg).value||0),
+      observacoes: $('#f-obs',bg).value || null,
+      status:'disponivel'
+    };
+    const {data,error} = await sb.from('componentes').insert(payload).select().single();
+    if(error){ toast('Erro ao salvar: '+error.message,'err'); return; }
+    await logHistorico('componentes',data.id,'criacao',null,payload);
+    toast('Componente cadastrado.');
+    close(); await loadComponentes(); route();
+  });
+}
+
+/* ================= APLICAR ================= */
+function renderAplicar(view){
+  const disponiveis = S.componentes.filter(c=>c.status==='disponivel');
+  view.innerHTML = `
+  ${viewHead('Operação rápida','Aplicar componente')}
+  <div class="card" style="max-width:640px">
+    <div class="card-pad">
+      <div class="field"><label>Número do agregado *</label>
+        <input list="dl-agregados-disp" id="ap-agregado" placeholder="Digite o número do agregado…">
+        <datalist id="dl-agregados-disp">${disponiveis.map(c=>`<option value="${escapeHtml(c.agregado_numero)}">`).join('')}</datalist>
+        <div class="hint" id="ap-info"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Data da aplicação</label><input type="date" id="ap-data" value="${new Date().toISOString().slice(0,10)}"></div>
+        <div class="field"><label>Horímetro da máquina (h) *</label><input type="number" step="0.1" id="ap-horimetro" placeholder="Ex: 50"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Frota</label><select id="ap-frota"><option value="">Selecione…</option>${S.frotas.map(f=>`<option value="${f.id}">${escapeHtml(f.nome)}</option>`).join('')}</select></div>
+        <div class="field"><label>Máquina/equipamento</label><select id="ap-maquina"><option value="">Selecione…</option></select></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Frente</label><select id="ap-frente"><option value="">Selecione…</option>${S.frentes.map(f=>`<option value="${f.id}">${escapeHtml(f.nome)}</option>`).join('')}</select></div>
+        <div class="field"><label>Responsável</label><input id="ap-responsavel"></div>
+      </div>
+      <div class="field"><label>Observações</label><textarea id="ap-obs"></textarea></div>
+      <button class="btn btn-primary btn-block" id="ap-save">${svgi('aplicar')}Aplicar componente</button>
+    </div>
+  </div>`;
+
+  let compSel = null;
+  $('#ap-agregado').addEventListener('input', ()=>{
+    const v = $('#ap-agregado').value.trim();
+    const c = S.componentes.find(x=>x.agregado_numero===v);
+    compSel = c && c.status==='disponivel' ? c : null;
+    const info = $('#ap-info');
+    if(!v){ info.textContent=''; return; }
+    if(!c){ info.textContent='Agregado não encontrado.'; info.style.color='var(--danger)'; }
+    else if(c.status!=='disponivel'){ info.textContent=`Este agregado está com status "${STATUS_LABEL[c.status]}" — não pode ser aplicado agora.`; info.style.color='var(--danger)'; }
+    else { info.textContent=`${tipoNome(c.tipo_id)} · ${modeloNome(c.modelo_id)} · valor ref. ${fmtMoney(c.valor_referencia)}`; info.style.color='var(--success)'; }
+  });
+  $('#ap-frota').addEventListener('change', ()=>{
+    const fid = $('#ap-frota').value;
+    const opts = S.maquinas.filter(m=>m.frota_id===fid);
+    $('#ap-maquina').innerHTML = '<option value="">Selecione…</option>'+opts.map(m=>`<option value="${m.id}">${escapeHtml(m.nome)}</option>`).join('');
+  });
+  $('#ap-save').addEventListener('click', async ()=>{
+    if(!compSel){ toast('Informe um agregado disponível válido.','err'); return; }
+    const horimetro = Number($('#ap-horimetro').value);
+    if(!horimetro && horimetro!==0){ toast('Informe o horímetro da aplicação.','err'); return; }
+    const payload = {
+      componente_id: compSel.id,
+      data_aplicacao: $('#ap-data').value,
+      frota_id: $('#ap-frota').value||null,
+      maquina_id: $('#ap-maquina').value||null,
+      frente_id: $('#ap-frente').value||null,
+      horimetro_aplicacao: horimetro,
+      responsavel: $('#ap-responsavel').value||null,
+      observacoes: $('#ap-obs').value||null,
+      ativa:true
+    };
+    const {data,error} = await sb.from('aplicacoes').insert(payload).select().single();
+    if(error){ toast('Erro: '+error.message,'err'); return; }
+    await sb.from('componentes').update({status:'aplicado',updated_at:new Date().toISOString()}).eq('id',compSel.id);
+    await logHistorico('aplicacoes',data.id,'aplicacao',null,payload);
+    toast(`Agregado ${compSel.agregado_numero} aplicado com sucesso.`);
+    await loadComponentes();
+    location.hash = '#agregado/'+compSel.id;
+  });
+}
+
+/* ================= RETIRAR ================= */
+function renderRetirar(view){
+  const aplicados = S.componentes.filter(c=>c.status==='aplicado');
+  view.innerHTML = `
+  ${viewHead('Operação rápida','Retirar componente')}
+  <div class="card" style="max-width:640px">
+    <div class="card-pad">
+      <div class="field"><label>Número do agregado *</label>
+        <input list="dl-agregados-ap" id="rt-agregado" placeholder="Digite o número do agregado…">
+        <datalist id="dl-agregados-ap">${aplicados.map(c=>`<option value="${escapeHtml(c.agregado_numero)}">`).join('')}</datalist>
+        <div class="hint" id="rt-info"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Data da retirada</label><input type="date" id="rt-data" value="${new Date().toISOString().slice(0,10)}"></div>
+        <div class="field"><label>Horímetro da máquina (h) *</label><input type="number" step="0.1" id="rt-horimetro"></div>
+      </div>
+      <div class="field" id="rt-horas-preview" style="display:none"></div>
+      <div class="row">
+        <div class="field"><label>Motivo da retirada</label><input id="rt-motivo" placeholder="Ex: fim de safra, falha, preventiva…"></div>
+        <div class="field"><label>Condição do componente</label><select id="rt-condicao"><option value="reutilizavel">Reutilizável</option><option value="precisa_reparo">Precisa reparo</option><option value="danificado">Danificado</option></select></div>
+      </div>
+      <div class="field"><label>Defeito encontrado</label><textarea id="rt-defeito"></textarea></div>
+      <div class="row">
+        <div class="field"><label>Responsável</label><input id="rt-responsavel"></div>
+      </div>
+      <div class="field"><label>Observações</label><textarea id="rt-obs"></textarea></div>
+      <button class="btn btn-primary btn-block" id="rt-save">${svgi('retirar')}Confirmar retirada</button>
+    </div>
+  </div>`;
+
+  let compSel=null, aplicacaoSel=null;
+  $('#rt-agregado').addEventListener('input', async ()=>{
+    const v = $('#rt-agregado').value.trim();
+    const c = S.componentes.find(x=>x.agregado_numero===v);
+    const info = $('#rt-info');
+    compSel=null; aplicacaoSel=null;
+    $('#rt-horas-preview').style.display='none';
+    if(!v){ info.textContent=''; return; }
+    if(!c || c.status!=='aplicado'){ info.textContent='Agregado não encontrado ou não está aplicado no momento.'; info.style.color='var(--danger)'; return; }
+    const {data:ap} = await sb.from('aplicacoes').select('*').eq('componente_id',c.id).eq('ativa',true).order('data_aplicacao',{ascending:false}).limit(1).maybeSingle();
+    if(!ap){ info.textContent='Não foi encontrada aplicação ativa para este agregado.'; info.style.color='var(--danger)'; return; }
+    compSel=c; aplicacaoSel=ap;
+    info.style.color='var(--success)';
+    info.textContent = `${tipoNome(c.tipo_id)} · ${modeloNome(c.modelo_id)} · aplicado em ${fmtDate(ap.data_aplicacao)} na frota ${frotaNome(ap.frota_id)} com horímetro ${ap.horimetro_aplicacao}h`;
+    updatePreview();
+  });
+  $('#rt-horimetro').addEventListener('input', updatePreview);
+  function updatePreview(){
+    if(!aplicacaoSel) return;
+    const h = Number($('#rt-horimetro').value);
+    const box = $('#rt-horas-preview');
+    if(!$('#rt-horimetro').value){ box.style.display='none'; return; }
+    const horas = h - aplicacaoSel.horimetro_aplicacao;
+    box.style.display='block';
+    if(horas < 0){
+      box.innerHTML = `<div class="alert danger">${svgi('warn')}<div><b>Horímetro final menor que o inicial</b>Confira o valor digitado, ou registre a justificativa nas observações.</div></div>`;
+    }else{
+      box.innerHTML = `<div class="alert">${svgi('check')}<div><b>${horas.toFixed(1)} horas trabalhadas</b>${aplicacaoSel.horimetro_aplicacao}h → ${h}h</div></div>`;
+    }
+  }
+  $('#rt-save').addEventListener('click', async ()=>{
+    if(!compSel||!aplicacaoSel){ toast('Informe um agregado aplicado válido.','err'); return; }
+    const horimetro = Number($('#rt-horimetro').value);
+    if(!$('#rt-horimetro').value){ toast('Informe o horímetro da retirada.','err'); return; }
+    const horas = horimetro - aplicacaoSel.horimetro_aplicacao;
+    if(horas<0 && !confirm('O horímetro final é menor que o inicial. Deseja confirmar mesmo assim?')) return;
+    const payload = {
+      aplicacao_id: aplicacaoSel.id, componente_id: compSel.id,
+      data_retirada: $('#rt-data').value, horimetro_retirada: horimetro,
+      horas_trabalhadas: horas, motivo: $('#rt-motivo').value||null,
+      defeito: $('#rt-defeito').value||null, condicao: $('#rt-condicao').value,
+      responsavel: $('#rt-responsavel').value||null, observacoes: $('#rt-obs').value||null
+    };
+    const {data,error} = await sb.from('retiradas').insert(payload).select().single();
+    if(error){ toast('Erro: '+error.message,'err'); return; }
+    await sb.from('aplicacoes').update({ativa:false}).eq('id',aplicacaoSel.id);
+    const novoStatus = payload.condicao==='danificado' ? 'aguardando_pecas' : (payload.condicao==='precisa_reparo' ? 'manutencao' : 'disponivel');
+    await sb.from('componentes').update({
+      status: novoStatus,
+      horas_acumuladas: Number(compSel.horas_acumuladas||0) + Math.max(0,horas),
+      updated_at:new Date().toISOString()
+    }).eq('id',compSel.id);
+    await logHistorico('retiradas',data.id,'retirada',null,payload);
+    toast(`Retirada registrada: ${horas.toFixed(1)}h trabalhadas.`);
+    await loadComponentes();
+    location.hash = '#agregado/'+compSel.id;
+  });
+}
+
+/* ================= MANUTENÇÃO ================= */
+function renderManutencaoList(view){
+  view.innerHTML = `<div class="loader" style="min-height:160px"><span class="spin"></span>Carregando…</div>`;
+  sb.from('manutencoes').select('*').order('data',{ascending:false}).then(({data})=>{
+    const rows = data||[];
+    view.innerHTML = `
+    ${viewHead('Oficina','Manutenção / Reparo', `<button class="btn btn-primary" id="btn-nova-manut">${svgi('plus')}Nova manutenção</button>`)}
+    <div class="card"><div class="table-wrap"><table>
+      <thead><tr><th>Data</th><th>Agregado</th><th>Motivo</th><th>Status</th><th>Custo total</th></tr></thead>
+      <tbody>${rows.length? rows.map(m=>{
+        const c=S.componentes.find(x=>x.id===m.componente_id);
+        return `<tr data-comp="${m.componente_id}"><td>${fmtDate(m.data)}</td><td class="mono">${c?escapeHtml(c.agregado_numero):'—'}</td><td>${escapeHtml(m.motivo||'—')}</td><td><span class="badge badge-${m.status==='concluida'?'reparado':'manutencao'}">${m.status}</span></td><td class="mono">${fmtMoney(m.custo_total)}</td></tr>`;
+      }).join('') : `<tr><td colspan="5"><div class="empty">${svgi('manutencao')}<div>Nenhuma manutenção registrada ainda.</div></div></td></tr>`}</tbody>
+    </table></div></div>`;
+    $$('tbody tr[data-comp]').forEach(tr=>tr.addEventListener('click',()=>location.hash='#agregado/'+tr.dataset.comp));
+    $('#btn-nova-manut').addEventListener('click', ()=> location.hash='#manutencao-novo');
+  });
+}
+
+function renderManutencaoForm(view, compId){
+  const comps = S.componentes;
+  view.innerHTML = `
+  ${viewHead('Oficina','Nova manutenção')}
+  <div class="card" style="max-width:760px">
+    <div class="card-pad">
+      <div class="field"><label>Número do agregado *</label>
+        <input list="dl-agregados-all" id="mt-agregado" value="${compId? escapeHtml(comps.find(c=>c.id===compId)?.agregado_numero||''):''}" placeholder="Digite o número do agregado…">
+        <datalist id="dl-agregados-all">${comps.map(c=>`<option value="${escapeHtml(c.agregado_numero)}">`).join('')}</datalist>
+        <div class="hint" id="mt-info"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Data</label><input type="date" id="mt-data" value="${new Date().toISOString().slice(0,10)}"></div>
+        <div class="field"><label>Responsável</label><input id="mt-responsavel"></div>
+      </div>
+      <div class="field"><label>Motivo</label><input id="mt-motivo"></div>
+      <div class="field"><label>Diagnóstico</label><textarea id="mt-diagnostico"></textarea></div>
+      <div class="field"><label>Serviço realizado</label><textarea id="mt-servico"></textarea></div>
+
+      <h4 style="margin:16px 0 8px;font-size:12.5px;text-transform:uppercase;color:var(--text-faint)">Peças utilizadas</h4>
+      <div class="row" style="align-items:flex-end">
+        <div class="field" style="flex:2"><label>Peça</label><select id="mt-peca-sel"><option value="">Selecione…</option>${S.pecas.filter(p=>p.ativo).map(p=>`<option value="${p.id}" data-preco="${p.valor_unitario}">${escapeHtml(p.codigo)} — ${escapeHtml(p.descricao)} (${fmtMoney(p.valor_unitario)})</option>`).join('')}</select></div>
+        <div class="field" style="max-width:110px"><label>Qtd.</label><input type="number" id="mt-peca-qtd" value="1" min="1"></div>
+        <div class="field" style="max-width:0"><button class="btn" id="mt-peca-add" type="button">${svgi('plus')}Add</button></div>
+      </div>
+      <div class="table-wrap"><table id="mt-pecas-table">
+        <thead><tr><th>Código</th><th>Peça</th><th>Qtd</th><th>Vlr. unit.</th><th>Total</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+
+      <div class="row" style="margin-top:12px">
+        <div class="field"><label>Mão de obra (R$)</label><input type="number" step="0.01" id="mt-mo" value="0"></div>
+        <div class="field"><label>Outros custos (R$)</label><input type="number" step="0.01" id="mt-outros" value="0"></div>
+      </div>
+      <div class="field"><label>Observações</label><textarea id="mt-obs"></textarea></div>
+
+      <div id="mt-analise"></div>
+
+      <button class="btn btn-primary btn-block" id="mt-save" style="margin-top:10px">${svgi('check')}Salvar manutenção</button>
+    </div>
+  </div>`;
+
+  let compSel = compId? comps.find(c=>c.id===compId) : null;
+  let itens = [];
+  if(compSel) $('#mt-info').textContent = `${tipoNome(compSel.tipo_id)} · ${modeloNome(compSel.modelo_id)} · valor ref. ${fmtMoney(compSel.valor_referencia)} · ${compSel.horas_acumuladas||0}h acumuladas`;
+
+  $('#mt-agregado').addEventListener('input', ()=>{
+    const v = $('#mt-agregado').value.trim();
+    compSel = comps.find(c=>c.agregado_numero===v) || null;
+    $('#mt-info').textContent = compSel ? `${tipoNome(compSel.tipo_id)} · ${modeloNome(compSel.modelo_id)} · valor ref. ${fmtMoney(compSel.valor_referencia)} · ${compSel.horas_acumuladas||0}h acumuladas` : 'Agregado não encontrado.';
+    renderAnalise();
+  });
+
+  function redrawItens(){
+    $('#mt-pecas-table tbody').innerHTML = itens.map((it,i)=>`
+      <tr><td class="mono">${escapeHtml(it.codigo)}</td><td>${escapeHtml(it.descricao)}</td><td>${it.quantidade}</td><td class="mono">${fmtMoney(it.valor_unitario)}</td><td class="mono">${fmtMoney(it.total)}</td>
+      <td><span class="icon-btn btn-sm" data-i="${i}" style="width:26px;height:26px">${svgi('x')}</span></td></tr>`).join('');
+    $$('#mt-pecas-table [data-i]').forEach(b=>b.addEventListener('click',()=>{ itens.splice(Number(b.dataset.i),1); redrawItens(); renderAnalise(); }));
+    renderAnalise();
+  }
+  $('#mt-peca-add').addEventListener('click', ()=>{
+    const sel = $('#mt-peca-sel'); const opt = sel.selectedOptions[0];
+    if(!opt || !opt.value){ toast('Selecione uma peça.','err'); return; }
+    const peca = S.pecas.find(p=>p.id===opt.value);
+    const qtd = Number($('#mt-peca-qtd').value)||1;
+    itens.push({peca_id:peca.id, codigo:peca.codigo, descricao:peca.descricao, quantidade:qtd, valor_unitario:peca.valor_unitario, total:qtd*peca.valor_unitario});
+    sel.value=''; $('#mt-peca-qtd').value=1;
+    redrawItens();
+  });
+
+  function totalPecas(){ return itens.reduce((a,i)=>a+i.total,0); }
+  function totalGeral(){ return totalPecas() + Number($('#mt-mo').value||0) + Number($('#mt-outros').value||0); }
+  function renderAnalise(){
+    const el = $('#mt-analise');
+    if(!compSel || !compSel.valor_referencia){ el.innerHTML=''; return; }
+    const total = totalGeral();
+    const pct = compSel.valor_referencia>0 ? (total/compSel.valor_referencia*100) : 0;
+    const over = pct >= S.limitePercent;
+    el.innerHTML = `
+    <div class="field">
+      <label>Custo desta manutenção vs. valor de referência</label>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <div class="gauge" style="flex:1"><div style="width:${Math.min(100,pct).toFixed(0)}%;background:${over?'var(--danger)':'var(--success)'}"></div></div>
+        <b class="mono" style="color:${over?'var(--danger)':'var(--success)'}">${pct.toFixed(0)}%</b>
+      </div>
+      ${over? `<div class="alert danger">${svgi('warn')}<div><b>Custo de reparo = ${pct.toFixed(0)}%</b>Este valor atingiu ou ultrapassou o limite configurado (${S.limitePercent}%). Avalie a viabilidade de reparo ou descarte após salvar.</div></div>` : ''}
+    </div>`;
+  }
+  ['#mt-mo','#mt-outros'].forEach(sel=>$(sel).addEventListener('input', renderAnalise));
+
+  $('#mt-save').addEventListener('click', async ()=>{
+    if(!compSel){ toast('Informe um agregado válido.','err'); return; }
+    const custo_pecas = totalPecas();
+    const mao_obra = Number($('#mt-mo').value||0);
+    const outros_custos = Number($('#mt-outros').value||0);
+    const custo_total = custo_pecas+mao_obra+outros_custos;
+    const payload = {
+      componente_id: compSel.id, data: $('#mt-data').value, motivo:$('#mt-motivo').value||null,
+      diagnostico:$('#mt-diagnostico').value||null, servico_realizado:$('#mt-servico').value||null,
+      responsavel:$('#mt-responsavel').value||null, mao_obra, outros_custos, custo_pecas, custo_total,
+      status:'concluida', observacoes:$('#mt-obs').value||null
+    };
+    const {data,error} = await sb.from('manutencoes').insert(payload).select().single();
+    if(error){ toast('Erro: '+error.message,'err'); return; }
+    if(itens.length){
+      const rows = itens.map(it=>({manutencao_id:data.id, peca_id:it.peca_id, descricao:it.descricao, quantidade:it.quantidade, valor_unitario:it.valor_unitario, total:it.total}));
+      await sb.from('pecas_manutencao').insert(rows);
+    }
+    const pct = compSel.valor_referencia>0 ? (custo_total/compSel.valor_referencia*100) : 0;
+    const novoStatus = pct>=S.limitePercent ? compSel.status : 'reparado';
+    await sb.from('componentes').update({status: novoStatus==='descartado'?'descartado':(compSel.status==='aplicado'?compSel.status:'reparado'), updated_at:new Date().toISOString()}).eq('id',compSel.id);
+    await logHistorico('manutencoes',data.id,'manutencao',null,payload);
+    toast('Manutenção registrada.');
+    await loadComponentes();
+    if(pct>=S.limitePercent){
+      toast(`Atenção: custo atingiu ${pct.toFixed(0)}% do valor do componente.`,'warn');
+    }
+    location.hash = '#agregado/'+compSel.id;
+  });
+}
+
+/* ================= PEÇAS ================= */
+function renderPecas(view){
+  const draw = ()=>{
+    const q = ($('#pc-search')?.value||'').toLowerCase();
+    const list = S.pecas.filter(p=>!q || (p.codigo+p.descricao).toLowerCase().includes(q));
+    $('#pc-tbody').innerHTML = list.length ? list.map(p=>`
+      <tr data-id="${p.id}"><td class="mono">${escapeHtml(p.codigo)}</td><td>${escapeHtml(p.descricao)}</td><td>${escapeHtml(tipoNome(p.tipo_componente_id))}</td>
+      <td class="mono">${fmtMoney(p.valor_unitario)}</td><td>${p.ativo?'<span class="badge badge-disponivel">Ativa</span>':'<span class="badge badge-baixado">Inativa</span>'}</td></tr>`).join('')
+      : `<tr><td colspan="5"><div class="empty">${svgi('pecas')}<div>Nenhuma peça cadastrada.</div></div></td></tr>`;
+    $$('#pc-tbody tr[data-id]').forEach(tr=>tr.addEventListener('click',()=>openPecaModal(S.pecas.find(p=>p.id===tr.dataset.id))));
+  };
+  view.innerHTML = `
+  ${viewHead('Catálogo','Peças', `<button class="btn btn-primary" id="btn-nova-peca">${svgi('plus')}Nova peça</button>`)}
+  <div class="card" style="margin-bottom:14px"><div class="card-pad"><div class="searchbox" style="max-width:360px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="pc-search" placeholder="Buscar código ou descrição…"></div></div></div>
+  <div class="card"><div class="table-wrap"><table>
+    <thead><tr><th>Código</th><th>Descrição</th><th>Tipo relacionado</th><th>Valor unitário</th><th>Status</th></tr></thead>
+    <tbody id="pc-tbody"></tbody></table></div></div>`;
+  $('#pc-search').addEventListener('input',draw);
+  $('#btn-nova-peca').addEventListener('click', ()=>openPecaModal());
+  draw();
+}
+function openPecaModal(peca){
+  const bg=document.createElement('div'); bg.className='modal-bg';
+  bg.innerHTML = `<div class="modal">
+    <div class="modal-head"><h3>${peca?'Editar peça':'Nova peça'}</h3><div class="icon-btn" id="m-close">${svgi('x')}</div></div>
+    <div class="modal-body">
+      <div class="row">
+        <div class="field"><label>Código *</label><input id="pf-codigo" value="${peca?escapeHtml(peca.codigo):''}"></div>
+        <div class="field"><label>Valor unitário (R$)</label><input type="number" step="0.01" id="pf-valor" value="${peca?peca.valor_unitario:0}"></div>
+      </div>
+      <div class="field"><label>Descrição *</label><input id="pf-descricao" value="${peca?escapeHtml(peca.descricao):''}"></div>
+      <div class="field"><label>Tipo de componente relacionado</label><select id="pf-tipo"><option value="">Nenhum</option>${S.tipos.map(t=>`<option value="${t.id}" ${peca&&peca.tipo_componente_id===t.id?'selected':''}>${escapeHtml(t.nome)}</option>`).join('')}</select></div>
+      <div class="field"><label><input type="checkbox" id="pf-ativo" ${!peca||peca.ativo?'checked':''} style="width:auto;margin-right:6px">Peça ativa</label></div>
+    </div>
+    <div class="modal-foot">${peca?`<button class="btn btn-danger" id="m-del" style="margin-right:auto">${svgi('trash')}Excluir</button>`:''}<button class="btn" id="m-cancel">Cancelar</button><button class="btn btn-primary" id="m-save">${svgi('check')}Salvar</button></div>
+  </div>`;
+  document.body.appendChild(bg);
+  const close=()=>bg.remove();
+  $('#m-close',bg).onclick=close; $('#m-cancel',bg).onclick=close;
+  if(peca) $('#m-del',bg).onclick = async ()=>{
+    if(!confirm('Excluir esta peça do catálogo?')) return;
+    const {error} = await sb.from('pecas').delete().eq('id',peca.id);
+    if(error){ toast('Erro: '+error.message,'err'); return; }
+    toast('Peça excluída.'); close(); await loadLookups(); route();
+  };
+  $('#m-save',bg).addEventListener('click', async ()=>{
+    const payload = {
+      codigo: $('#pf-codigo',bg).value.trim(), descricao:$('#pf-descricao',bg).value.trim(),
+      valor_unitario:Number($('#pf-valor',bg).value||0), tipo_componente_id:$('#pf-tipo',bg).value||null,
+      ativo: $('#pf-ativo',bg).checked
+    };
+    if(!payload.codigo||!payload.descricao){ toast('Preencha código e descrição.','err'); return; }
+    const q = peca ? sb.from('pecas').update(payload).eq('id',peca.id) : sb.from('pecas').insert(payload);
+    const {error} = await q;
+    if(error){ toast('Erro: '+error.message,'err'); return; }
+    toast('Peça salva.'); close(); await loadLookups(); route();
+  });
+}
+
+/* ================= AGREGADO — DETALHE / LINHA DO TEMPO ================= */
+async function renderAgregadoDetalhe(view, id){
+  view.innerHTML = `<div class="loader" style="min-height:220px"><span class="spin"></span>Carregando agregado…</div>`;
+  const comp = S.componentes.find(c=>c.id===id);
+  if(!comp){ view.innerHTML = `<div class="empty">Agregado não encontrado.</div>`; return; }
+  const [{data:aplicacoes},{data:retiradas},{data:manutencoes},{data:descarte}] = await Promise.all([
+    sb.from('aplicacoes').select('*').eq('componente_id',id).order('data_aplicacao'),
+    sb.from('retiradas').select('*').eq('componente_id',id).order('data_retirada'),
+    sb.from('manutencoes').select('*').eq('componente_id',id).order('data'),
+    sb.from('descartes').select('*').eq('componente_id',id).maybeSingle(),
+  ]);
+  const custoTotalManut = (manutencoes||[]).reduce((a,m)=>a+Number(m.custo_total||0),0);
+  const custoMedioHora = comp.horas_acumuladas>0 ? custoTotalManut/comp.horas_acumuladas : 0;
+  const ultimaAplicacao = (aplicacoes||[])[aplicacoes.length-1];
+  const pctAtual = comp.valor_referencia>0 ? (custoTotalManut/comp.valor_referencia*100) : 0;
+
+  // Monta eventos da timeline
+  const events = [];
+  events.push({type:'entrada', date:comp.data_entrada, title:'Entrada no sistema', body:`${tipoNome(comp.tipo_id)} · ${modeloNome(comp.modelo_id)}`});
+  (aplicacoes||[]).forEach(a=> events.push({type:'aplicacao', date:a.data_aplicacao, title:`Aplicado — Frota ${frotaNome(a.frota_id)}`, body:`Máquina ${maquinaNome(a.maquina_id)} · Horímetro ${a.horimetro_aplicacao}h · Resp. ${a.responsavel||'—'}`}));
+  (retiradas||[]).forEach(r=> events.push({type:'retirada', date:r.data_retirada, title:`Retirado — ${r.horas_trabalhadas}h trabalhadas`, body:`Horímetro final ${r.horimetro_retirada}h · Motivo: ${r.motivo||'—'} · Condição: ${r.condicao||'—'}`}));
+  (manutencoes||[]).forEach(m=> events.push({type:'manutencao', date:m.data, title:`Manutenção — ${fmtMoney(m.custo_total)}`, body:`${m.motivo||''} ${m.servico_realizado?'· '+m.servico_realizado:''}`}));
+  if(descarte) events.push({type:'descarte', date:descarte.data_descarte, title:'Componente descartado', body:descarte.motivo||''});
+  events.sort((a,b)=> new Date(a.date||0) - new Date(b.date||0));
+
+  view.innerHTML = `
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+    <div class="icon-btn" id="btn-back">${svgi('back')}</div>
+    <div class="eyebrow">Agregado</div>
+  </div>
+  <div class="view-head">
+    <div><h1 class="mono">${escapeHtml(comp.agregado_numero)} <span class="badge badge-${comp.status}" style="vertical-align:middle;margin-left:8px">${STATUS_LABEL[comp.status]}</span></h1>
+    <div style="color:var(--text-dim);margin-top:4px">${escapeHtml(tipoNome(comp.tipo_id))} · ${escapeHtml(modeloNome(comp.modelo_id))}</div></div>
+    <div class="view-actions">
+      <button class="btn" id="btn-qr">${svgi('qr')}QR Code</button>
+      <button class="btn" id="btn-nova-manut2">${svgi('manutencao')}Manutenção</button>
+      ${comp.status!=='descartado' ? `<button class="btn btn-danger" id="btn-descartar">${svgi('descarte')}Descartar</button>` : `<button class="btn" id="btn-laudo">${svgi('print')}Ver laudo</button>`}
+    </div>
+  </div>
+
+  <div class="grid grid-4" style="margin-bottom:16px">
+    <div class="card stat"><div class="st-label">Horas acumuladas</div><div class="st-value">${Number(comp.horas_acumuladas||0).toFixed(0)}h</div></div>
+    <div class="card stat st-purple"><div class="st-label">Custo total manutenção</div><div class="st-value" style="font-size:20px">${fmtMoney(custoTotalManut)}</div><div class="st-sub">${fmtMoney(custoMedioHora)}/hora</div></div>
+    <div class="card stat st-blue"><div class="st-label">Aplicações / Retiradas</div><div class="st-value">${(aplicacoes||[]).length} / ${(retiradas||[]).length}</div></div>
+    <div class="card stat ${pctAtual>=S.limitePercent?'st-red':'st-green'}"><div class="st-label">Custo vs. valor referência</div><div class="st-value">${pctAtual.toFixed(0)}%</div><div class="st-sub">${fmtMoney(comp.valor_referencia)} de referência</div></div>
+  </div>
+
+  ${pctAtual>=S.limitePercent && comp.status!=='descartado' ? `
+  <div class="alert danger" style="margin-bottom:16px">${svgi('warn')}<div><b>Custo de reparo = ${pctAtual.toFixed(0)}%</b>O custo acumulado atingiu ou ultrapassou o limite configurado (${S.limitePercent}%) do valor de referência. Avalie a viabilidade de reparo ou descarte.</div></div>`:''}
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="panel-head"><h3>Linha do tempo</h3></div>
+      <div class="card-pad">
+        <div class="timeline">
+        ${events.length? events.map(e=>`
+          <div class="tl-item type-${e.type}"><div class="tl-dot"></div><div class="tl-card">
+            <div class="tl-head"><span>${escapeHtml(e.title)}</span><span class="tl-date">${fmtDate(e.date)}</span></div>
+            <div class="tl-body">${escapeHtml(e.body||'')}</div>
+          </div></div>`).join('') : '<div class="empty">Sem eventos ainda.</div>'}
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="panel-head"><h3>Resumo</h3></div>
+      <div class="card-pad">
+        <div class="laudo-grid">
+          <div><b>Código</b><div>${escapeHtml(comp.codigo||'—')}</div></div>
+          <div><b>Data de entrada</b><div>${fmtDate(comp.data_entrada)}</div></div>
+          <div><b>Última frota</b><div>${ultimaAplicacao?escapeHtml(frotaNome(ultimaAplicacao.frota_id)):'—'}</div></div>
+          <div><b>Último horímetro</b><div>${ultimaAplicacao?ultimaAplicacao.horimetro_aplicacao+'h':'—'}</div></div>
+          <div><b>Nº manutenções</b><div>${(manutencoes||[]).length}</div></div>
+          <div><b>Valor de referência</b><div>${fmtMoney(comp.valor_referencia)}</div></div>
+        </div>
+        <div style="margin-top:14px"><label style="font-size:12px;font-weight:700;color:var(--text-dim)">Observações</label><div style="margin-top:4px;color:var(--text-dim)">${escapeHtml(comp.observacoes||'—')}</div></div>
+      </div>
+    </div>
+  </div>`;
+
+  $('#btn-back').addEventListener('click',()=>history.length>1?history.back():location.hash='#componentes');
+  $('#btn-nova-manut2').addEventListener('click',()=>location.hash='#manutencao-novo/'+comp.id);
+  $('#btn-qr')?.addEventListener('click',()=>openQrModal(comp));
+  $('#btn-descartar')?.addEventListener('click',()=>location.hash='#descarte-novo/'+comp.id);
+  $('#btn-laudo')?.addEventListener('click', async ()=>{
+    const {data:d} = await sb.from('descartes').select('*').eq('componente_id',comp.id).maybeSingle();
+    if(d) openLaudoModal(comp,d); else toast('Laudo não encontrado.','err');
+  });
+}
+
+function openQrModal(comp){
+  const bg=document.createElement('div'); bg.className='modal-bg';
+  const url = location.origin+location.pathname+'#agregado/'+comp.id;
+  bg.innerHTML = `<div class="modal" style="max-width:360px">
+    <div class="modal-head"><h3>QR — Agregado ${escapeHtml(comp.agregado_numero)}</h3><div class="icon-btn" id="m-close">${svgi('x')}</div></div>
+    <div class="modal-body" style="text-align:center">
+      <div class="qr-box"><canvas id="qr-canvas" width="220" height="220"></canvas></div>
+      <div class="hint" style="margin-top:10px;word-break:break-all">${escapeHtml(url)}</div>
+      <div class="hint">Escanear abre a ficha deste agregado (é necessário estar logado no sistema).</div>
+    </div>
+  </div>`;
+  document.body.appendChild(bg);
+  $('#m-close',bg).onclick=()=>bg.remove();
+  drawQr($('#qr-canvas',bg), url);
+}
+// Gerador de QR Code simples (sem dependência externa) — modelo de matriz reduzido para texto curto
+function drawQr(canvas, text){
+  // usa API pública leve via imagem (qrserver) como fallback visual; se offline, mostra o link em texto.
+  const img = new Image();
+  img.crossOrigin='anonymous';
+  img.onload = ()=>{ const ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,220,220); };
+  img.onerror = ()=>{ const ctx=canvas.getContext('2d'); ctx.fillStyle='#000'; ctx.font='11px monospace'; ctx.fillText('QR indisponível offline',10,110); };
+  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data='+encodeURIComponent(text);
+}
+
+/* ================= DESCARTE ================= */
+function renderDescartesList(view){
+  view.innerHTML = `<div class="loader" style="min-height:160px"><span class="spin"></span>Carregando…</div>`;
+  sb.from('descartes').select('*').order('data_descarte',{ascending:false}).then(({data})=>{
+    const rows = data||[];
+    view.innerHTML = `
+    ${viewHead('Fim de vida útil','Descartes')}
+    <div class="card"><div class="table-wrap"><table>
+      <thead><tr><th>Data</th><th>Agregado</th><th>Motivo</th><th>Custo acumulado</th><th>%</th><th></th></tr></thead>
+      <tbody>${rows.length? rows.map(d=>{
+        const c=S.componentes.find(x=>x.id===d.componente_id);
+        return `<tr><td>${fmtDate(d.data_descarte)}</td><td class="mono">${c?escapeHtml(c.agregado_numero):'—'}</td><td>${escapeHtml(d.motivo||'—')}</td><td class="mono">${fmtMoney(d.custo_total_manutencoes)}</td><td class="mono">${Number(d.percentual||0).toFixed(0)}%</td>
+        <td><button class="btn btn-sm" data-id="${d.id}">${svgi('print')}Laudo</button></td></tr>`;
+      }).join('') : `<tr><td colspan="6"><div class="empty">${svgi('descarte')}<div>Nenhum descarte registrado.</div></div></td></tr>`}</tbody>
+    </table></div></div>`;
+    $$('button[data-id]').forEach(b=>b.addEventListener('click', async ()=>{
+      const d = rows.find(x=>x.id===b.dataset.id);
+      const c = S.componentes.find(x=>x.id===d.componente_id);
+      openLaudoModal(c,d);
+    }));
+  });
+}
+
+function renderDescarteForm(view, compId){
+  const comp = S.componentes.find(c=>c.id===compId);
+  if(!comp){ view.innerHTML='<div class="empty">Agregado não encontrado.</div>'; return; }
+  Promise.all([
+    sb.from('manutencoes').select('*').eq('componente_id',compId).order('data'),
+    sb.from('aplicacoes').select('*').eq('componente_id',compId).order('data_aplicacao',{ascending:false}).limit(1),
+    sb.from('retiradas').select('*').eq('componente_id',compId).order('data_retirada',{ascending:false}).limit(1),
+  ]).then(([{data:manut},{data:ultAp},{data:ultRet}])=>{
+    const custoTotal = (manut||[]).reduce((a,m)=>a+Number(m.custo_total||0),0);
+    const custoUltima = manut&&manut.length? manut[manut.length-1].custo_total : 0;
+    const pct = comp.valor_referencia>0 ? (custoTotal/comp.valor_referencia*100):0;
+    let fotos = [];
+
+    view.innerHTML = `
+    ${viewHead('Fim de vida útil','Processo de descarte — Agregado '+escapeHtml(comp.agregado_numero))}
+    ${pct>0? `<div class="alert ${pct>=S.limitePercent?'danger':''}" style="margin-bottom:16px">${svgi('warn')}<div><b>Custo acumulado = ${pct.toFixed(0)}% do valor de referência</b>${fmtMoney(custoTotal)} de ${fmtMoney(comp.valor_referencia)}. ${pct>=S.limitePercent?'Acima do limite configurado de '+S.limitePercent+'%.':'Dentro do limite configurado de '+S.limitePercent+'%.'}</div></div>` : ''}
+
+    <div class="card" style="max-width:820px">
+      <div class="card-pad">
+        <h4 style="font-size:12.5px;text-transform:uppercase;color:var(--text-faint);margin-bottom:10px">Dados automáticos</h4>
+        <div class="laudo-grid" style="margin-bottom:16px">
+          <div><b>Tipo / Modelo</b><div>${escapeHtml(tipoNome(comp.tipo_id))} · ${escapeHtml(modeloNome(comp.modelo_id))}</div></div>
+          <div><b>Horas totais trabalhadas</b><div>${Number(comp.horas_acumuladas||0).toFixed(0)}h</div></div>
+          <div><b>Última frota</b><div>${ultAp&&ultAp[0]?escapeHtml(frotaNome(ultAp[0].frota_id)):'—'}</div></div>
+          <div><b>Último horímetro (retirada)</b><div>${ultRet&&ultRet[0]?ultRet[0].horimetro_retirada+'h':'—'}</div></div>
+          <div><b>Nº de manutenções</b><div>${(manut||[]).length}</div></div>
+          <div><b>Custo total de manutenções</b><div>${fmtMoney(custoTotal)}</div></div>
+        </div>
+
+        <div class="row">
+          <div class="field"><label>Data do descarte</label><input type="date" id="ds-data" value="${new Date().toISOString().slice(0,10)}"></div>
+          <div class="field"><label>Condição do componente</label><select id="ds-condicao"><option>Irreparável</option><option>Custo inviável</option><option>Desgaste total</option><option>Outro</option></select></div>
+        </div>
+        <div class="field"><label>Motivo do descarte *</label><input id="ds-motivo" placeholder="Ex: custo de reparo acima do limite, trinca no bloco, etc."></div>
+        <div class="field"><label>Diagnóstico técnico</label><textarea id="ds-diagnostico"></textarea></div>
+        <div class="row">
+          <div class="field"><label>Responsável pela avaliação</label><input id="ds-resp-aval"></div>
+          <div class="field"><label>Responsável pela aprovação</label><input id="ds-resp-aprov"></div>
+        </div>
+        <div class="field"><label>Observações</label><textarea id="ds-obs"></textarea></div>
+
+        <h4 style="font-size:12.5px;text-transform:uppercase;color:var(--text-faint);margin:16px 0 8px">Evidências fotográficas</h4>
+        <div class="dropzone" id="ds-drop">${svgi('camera')}<div style="margin-top:6px">Toque para tirar foto ou anexar imagens (várias)</div></div>
+        <input type="file" id="ds-file" accept="image/*" multiple capture="environment" style="display:none">
+        <div class="photo-grid" id="ds-photos"></div>
+
+        <button class="btn btn-danger btn-block" id="ds-save" style="margin-top:16px">${svgi('trash')}Confirmar descarte</button>
+      </div>
+    </div>`;
+
+    $('#ds-drop').addEventListener('click',()=>$('#ds-file').click());
+    $('#ds-file').addEventListener('change', async (e)=>{
+      const files = [...e.target.files];
+      for(const f of files){
+        const localUrl = URL.createObjectURL(f);
+        fotos.push({file:f, preview:localUrl});
+      }
+      redrawFotos();
+      e.target.value='';
+    });
+    function redrawFotos(){
+      $('#ds-photos').innerHTML = fotos.map((f,i)=>`<div class="ph-del"><img src="${f.preview}"><button data-i="${i}">×</button></div>`).join('');
+      $$('#ds-photos button').forEach(b=>b.addEventListener('click',()=>{ fotos.splice(Number(b.dataset.i),1); redrawFotos(); }));
+    }
+
+    $('#ds-save').addEventListener('click', async ()=>{
+      const motivo = $('#ds-motivo').value.trim();
+      if(!motivo){ toast('Informe o motivo do descarte.','err'); return; }
+      if(!confirm('Confirmar o descarte deste componente? Esta ação não pode ser desfeita.')) return;
+      const btn = $('#ds-save'); btn.disabled=true; btn.textContent='Salvando…';
+
+      const payload = {
+        componente_id: comp.id, data_descarte: $('#ds-data').value,
+        frota_ultima: ultAp&&ultAp[0]?frotaNome(ultAp[0].frota_id):null,
+        horimetro_retirada: ultRet&&ultRet[0]?ultRet[0].horimetro_retirada:null,
+        horas_totais: comp.horas_acumuladas, numero_manutencoes:(manut||[]).length,
+        custo_total_manutencoes: custoTotal, custo_ultima_manutencao: custoUltima,
+        valor_referencia: comp.valor_referencia, percentual: pct,
+        motivo, diagnostico: $('#ds-diagnostico').value||null, condicao: $('#ds-condicao').value,
+        responsavel_avaliacao: $('#ds-resp-aval').value||null, responsavel_aprovacao: $('#ds-resp-aprov').value||null,
+        observacoes: $('#ds-obs').value||null
+      };
+      const {data:descarte,error} = await sb.from('descartes').insert(payload).select().single();
+      if(error){ toast('Erro: '+error.message,'err'); btn.disabled=false; return; }
+
+      for(const f of fotos){
+        const path = `descartes/${descarte.id}/${Date.now()}-${f.file.name}`;
+        const {error:upErr} = await sb.storage.from(BUCKET).upload(path, f.file);
+        if(!upErr){
+          const {data:pub} = sb.storage.from(BUCKET).getPublicUrl(path);
+          await sb.from('fotos_descarte').insert({descarte_id:descarte.id, url:pub.publicUrl});
+        }
+      }
+      await sb.from('componentes').update({status:'descartado', updated_at:new Date().toISOString()}).eq('id',comp.id);
+      await logHistorico('descartes',descarte.id,'descarte',null,payload);
+      toast('Descarte registrado com sucesso.');
+      await loadComponentes();
+      const {data:fotosFinal} = await sb.from('fotos_descarte').select('*').eq('descarte_id',descarte.id);
+      openLaudoModal(comp, {...descarte, _fotos:fotosFinal, _manut:manut});
+    });
+  });
+}
+
+/* ================= LAUDO TÉCNICO ================= */
+async function openLaudoModal(comp, descarte){
+  let manut = descarte._manut;
+  let fotos = descarte._fotos;
+  if(!manut){ const r = await sb.from('manutencoes').select('*').eq('componente_id',comp.id).order('data'); manut = r.data||[]; }
+  if(!fotos){ const r = await sb.from('fotos_descarte').select('*').eq('descarte_id',descarte.id); fotos = r.data||[]; }
+  const pecasPorManut = {};
+  for(const m of manut){
+    const {data} = await sb.from('pecas_manutencao').select('*').eq('manutencao_id',m.id);
+    pecasPorManut[m.id]=data||[];
+  }
+  const custoPorHora = comp.horas_acumuladas>0 ? (descarte.custo_total_manutencoes/comp.horas_acumuladas) : 0;
+
+  const bg=document.createElement('div'); bg.className='modal-bg';
+  bg.innerHTML = `<div class="modal modal-lg">
+    <div class="modal-head no-print"><h3>Laudo técnico de descarte</h3><div style="display:flex;gap:8px">
+      <button class="btn btn-sm" id="m-print">${svgi('print')}Imprimir / PDF</button>
+      <div class="icon-btn" id="m-close">${svgi('x')}</div></div>
+    </div>
+    <div class="modal-body" id="laudo-print">
+      <div class="laudo">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#c8590e;font-weight:700">Hidráulica Morro Vermelho</div>
+            <h2>Laudo Técnico de Descarte de Componente</h2>
+          </div>
+        </div>
+        <h4>Identificação</h4>
+        <div class="laudo-grid">
+          <div><b>Agregado</b><div>${escapeHtml(comp.agregado_numero)}</div></div>
+          <div><b>Tipo</b><div>${escapeHtml(tipoNome(comp.tipo_id))}</div></div>
+          <div><b>Modelo</b><div>${escapeHtml(modeloNome(comp.modelo_id))}</div></div>
+          <div><b>Data do descarte</b><div>${fmtDate(descarte.data_descarte)}</div></div>
+          <div><b>Última frota</b><div>${escapeHtml(descarte.frota_ultima||'—')}</div></div>
+          <div><b>Último horímetro</b><div>${descarte.horimetro_retirada||'—'}h</div></div>
+        </div>
+
+        <h4>Histórico operacional</h4>
+        <div class="laudo-grid">
+          <div><b>Horas trabalhadas (total)</b><div>${Number(descarte.horas_totais||0).toFixed(0)}h</div></div>
+          <div><b>Quantidade de manutenções</b><div>${descarte.numero_manutencoes}</div></div>
+        </div>
+
+        <h4>Histórico de manutenção</h4>
+        ${manut.length? manut.map((m,i)=>`
+          <div style="margin-bottom:8px">
+            <b>Manutenção ${String(i+1).padStart(2,'0')} — ${fmtDate(m.data)}</b>
+            ${pecasPorManut[m.id]?.length? `<table style="margin:4px 0"><thead><tr><th>Peça</th><th>Qtd</th><th>Valor</th></tr></thead><tbody>${pecasPorManut[m.id].map(p=>`<tr><td>${escapeHtml(p.descricao)}</td><td>${p.quantidade}</td><td>${fmtMoney(p.total)}</td></tr>`).join('')}</tbody></table>`:''}
+            <div>Custo: ${fmtMoney(m.custo_total)}</div>
+          </div>`).join('') : '<div>Nenhuma manutenção registrada.</div>'}
+
+        <h4>Custos</h4>
+        <div class="laudo-grid">
+          <div><b>Custo da última manutenção</b><div>${fmtMoney(descarte.custo_ultima_manutencao)}</div></div>
+          <div><b>Custo acumulado</b><div>${fmtMoney(descarte.custo_total_manutencoes)}</div></div>
+          <div><b>Valor de referência</b><div>${fmtMoney(descarte.valor_referencia)}</div></div>
+          <div><b>Percentual do custo</b><div>${Number(descarte.percentual||0).toFixed(0)}%</div></div>
+          <div><b>Custo por hora trabalhada</b><div>${fmtMoney(custoPorHora)}</div></div>
+        </div>
+
+        <h4>Análise técnica</h4>
+        <div>${escapeHtml(descarte.diagnostico||'Não informado.')}</div>
+
+        <h4>Motivo do descarte</h4>
+        <div>${escapeHtml(descarte.motivo)}</div>
+
+        ${fotos.length? `<h4>Evidências</h4><div class="photo-grid">${fotos.map(f=>`<img src="${f.url}">`).join('')}</div>` : ''}
+
+        <h4>Conclusão</h4>
+        <div>Com base no histórico operacional e de manutenção registrado no sistema, o componente identificado como agregado ${escapeHtml(comp.agregado_numero)} apresentou custo acumulado de reparo equivalente a ${Number(descarte.percentual||0).toFixed(0)}% de seu valor de referência, tendo sido avaliado tecnicamente e classificado como inviável para reparo adicional. A decisão de descarte foi registrada conforme avaliação documentada neste laudo.</div>
+
+        <h4>Responsáveis</h4>
+        <div class="laudo-grid">
+          <div><b>Avaliação</b><div>${escapeHtml(descarte.responsavel_avaliacao||'—')}</div></div>
+          <div><b>Aprovação</b><div>${escapeHtml(descarte.responsavel_aprovacao||'—')}</div></div>
+          <div><b>Data</b><div>${fmtDate(descarte.data_descarte)}</div></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(bg);
+  $('#m-close',bg).onclick=()=>bg.remove();
+  $('#m-print',bg).onclick=()=>window.print();
+}
+
+/* ================= FROTAS ================= */
+function renderFrotas(view){
+  view.innerHTML = `
+  ${viewHead('Operação','Frotas & Máquinas')}
+  <div class="tabs">
+    <div class="tab active" data-t="frotas">Frotas</div>
+    <div class="tab" data-t="frota-detalhe">Análise por frota</div>
+  </div>
+  <div id="frotas-content"></div>`;
+  const content = $('#frotas-content');
+
+  function drawList(){
+    content.innerHTML = `
+    <div class="card" style="margin-bottom:14px"><div class="card-pad" style="display:flex;gap:10px;flex-wrap:wrap">
+      <input id="fr-nova" placeholder="Nome da nova frota" style="max-width:220px">
+      <button class="btn btn-primary" id="fr-add">${svgi('plus')}Adicionar frota</button>
+    </div></div>
+    <div class="card"><div class="table-wrap"><table>
+      <thead><tr><th>Frota</th><th>Máquinas</th><th>Componentes aplicados</th></tr></thead>
+      <tbody>${S.frotas.map(f=>{
+        const nMaq = S.maquinas.filter(m=>m.frota_id===f.id).length;
+        return `<tr data-id="${f.id}"><td>${escapeHtml(f.nome)}</td><td>${nMaq}</td><td>—</td></tr>`;
+      }).join('') || `<tr><td colspan="3"><div class="empty">Nenhuma frota cadastrada.</div></td></tr>`}</tbody>
+    </table></div></div>`;
+    $('#fr-add').addEventListener('click', async ()=>{
+      const nome = $('#fr-nova').value.trim(); if(!nome) return;
+      const {error} = await sb.from('frotas').insert({nome});
+      if(error){ toast('Erro: '+error.message,'err'); return; }
+      await loadLookups(); drawList(); toast('Frota adicionada.');
+    });
+    $$('tbody tr[data-id]').forEach(tr=>tr.addEventListener('click', ()=>{
+      $('.tab[data-t="frota-detalhe"]').click();
+      $('#fr-select').value = tr.dataset.id;
+      $('#fr-select').dispatchEvent(new Event('change'));
+    }));
+  }
+  function drawDetalhe(){
+    content.innerHTML = `
+    <div class="card" style="margin-bottom:14px"><div class="card-pad">
+      <div class="field" style="max-width:320px"><label>Selecionar frota</label>
+      <select id="fr-select"><option value="">Selecione…</option>${S.frotas.map(f=>`<option value="${f.id}">${escapeHtml(f.nome)}</option>`).join('')}</select></div>
+    </div></div>
+    <div id="fr-result"></div>`;
+    $('#fr-select').addEventListener('change', async ()=>{
+      const fid = $('#fr-select').value;
+      if(!fid){ $('#fr-result').innerHTML=''; return; }
+      const {data:aplic} = await sb.from('aplicacoes').select('*').eq('frota_id',fid);
+      const {data:ret} = await sb.from('retiradas').select('*, aplicacoes!inner(frota_id)').eq('aplicacoes.frota_id',fid);
+      const compsIds = [...new Set((aplic||[]).map(a=>a.componente_id))];
+      const comps = S.componentes.filter(c=>compsIds.includes(c.id));
+      const {data:manutAll} = await sb.from('manutencoes').select('*').in('componente_id', compsIds.length?compsIds:['00000000-0000-0000-0000-000000000000']);
+      const custo = (manutAll||[]).reduce((a,m)=>a+Number(m.custo_total||0),0);
+      const horas = (ret||[]).reduce((a,r)=>a+Number(r.horas_trabalhadas||0),0);
+      const porTipo = {};
+      comps.forEach(c=>{ const t=tipoNome(c.tipo_id); porTipo[t]=(porTipo[t]||0)+1; });
+      $('#fr-result').innerHTML = `
+      <div class="grid grid-4" style="margin-bottom:14px">
+        <div class="card stat"><div class="st-label">Componentes já utilizados</div><div class="st-value">${comps.length}</div></div>
+        <div class="card stat st-blue"><div class="st-label">Aplicados atualmente</div><div class="st-value">${comps.filter(c=>c.status==='aplicado').length}</div></div>
+        <div class="card stat st-green"><div class="st-label">Horas trabalhadas</div><div class="st-value">${horas.toFixed(0)}h</div></div>
+        <div class="card stat st-purple"><div class="st-label">Custo de manutenção</div><div class="st-value" style="font-size:20px">${fmtMoney(custo)}</div></div>
+      </div>
+      <div class="card"><div class="panel-head"><h3>Componentes por tipo</h3></div><div class="card-pad">
+        ${Object.entries(porTipo).map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>${escapeHtml(k)}</span><b>${v}</b></div>`).join('')||'<div class="empty">Sem dados.</div>'}
+      </div></div>`;
+    });
+  }
+  $$('.tab').forEach(t=>t.addEventListener('click',()=>{
+    $$('.tab').forEach(x=>x.classList.remove('active')); t.classList.add('active');
+    t.dataset.t==='frotas' ? drawList() : drawDetalhe();
+  }));
+  drawList();
+}
+
+/* ================= IMPORTAR ================= */
+function renderImportar(view){
+  view.innerHTML = `
+  ${viewHead('Dados','Importar planilhas')}
+  <div class="card" style="max-width:700px">
+    <div class="card-pad">
+      <div class="field"><label>O que deseja importar?</label>
+        <select id="im-tipo"><option value="pecas">Catálogo de peças (código, descrição, valor)</option><option value="componentes">Componentes (agregado, tipo, modelo, valor)</option></select>
+      </div>
+      <div class="dropzone" id="im-drop">${svgi('importar')}<div style="margin-top:6px">Clique para selecionar um arquivo .csv ou .xlsx</div></div>
+      <input type="file" id="im-file" accept=".csv,.xlsx,.xls" style="display:none">
+      <div class="hint" style="margin-top:8px">Formato peças: <span class="mono">codigo, descricao, valor</span>. Formato componentes: <span class="mono">agregado, tipo, modelo, valor</span>.</div>
+      <div id="im-preview"></div>
+    </div>
+  </div>`;
+  $('#im-drop').addEventListener('click',()=>$('#im-file').click());
+  $('#im-file').addEventListener('change', async (e)=>{
+    const file = e.target.files[0]; if(!file) return;
+    let rows = [];
+    if(file.name.endsWith('.csv')){
+      const text = await file.text();
+      const lines = text.split(/\r?\n/).filter(l=>l.trim());
+      const headers = lines[0].split(',').map(h=>h.trim().toLowerCase());
+      rows = lines.slice(1).map(l=>{
+        const cells = l.split(',');
+        const o={}; headers.forEach((h,i)=>o[h]=(cells[i]||'').trim()); return o;
+      });
+    } else {
+      const mod = await import('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm');
+      const buf = await file.arrayBuffer();
+      const wb = mod.read(buf,{type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const json = mod.utils.sheet_to_json(ws,{defval:''});
+      rows = json.map(r=>{
+        const o={}; Object.keys(r).forEach(k=>o[k.trim().toLowerCase()]=String(r[k]).trim()); return o;
+      });
+    }
+    if(!rows.length){ toast('Arquivo vazio ou não reconhecido.','err'); return; }
+    const tipo = $('#im-tipo').value;
+    $('#im-preview').innerHTML = `
+      <h4 style="margin:16px 0 8px;font-size:12.5px;text-transform:uppercase;color:var(--text-faint)">Prévia (${rows.length} linhas)</h4>
+      <div class="table-wrap"><table><thead><tr>${Object.keys(rows[0]).map(h=>`<th>${escapeHtml(h)}</th>`).join('')}</tr></thead>
+      <tbody>${rows.slice(0,8).map(r=>`<tr>${Object.values(r).map(v=>`<td>${escapeHtml(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+      <button class="btn btn-primary" id="im-confirm" style="margin-top:12px">${svgi('check')}Confirmar importação de ${rows.length} linhas</button>`;
+    $('#im-confirm').addEventListener('click', async ()=>{
+      const btn = $('#im-confirm'); btn.disabled=true; btn.textContent='Importando…';
+      let ok=0, fail=0;
+      for(const r of rows){
+        try{
+          if(tipo==='pecas'){
+            const codigo = r.codigo||r['código']; const descricao = r.descricao||r['descrição'];
+            if(!codigo||!descricao) { fail++; continue; }
+            const {error} = await sb.from('pecas').upsert({codigo, descricao, valor_unitario:Number(r.valor||0)},{onConflict:'codigo'});
+            error?fail++:ok++;
+          }else{
+            const agregado_numero = r.agregado||r['número do agregado']||r.numero;
+            if(!agregado_numero){ fail++; continue; }
+            let tipoRow = S.tipos.find(t=>t.nome.toLowerCase()===String(r.tipo||'').toLowerCase());
+            const {error} = await sb.from('componentes').upsert({
+              agregado_numero, tipo_id: tipoRow?tipoRow.id:null, codigo:null,
+              valor_referencia:Number(r.valor||0), status:'disponivel'
+            },{onConflict:'agregado_numero'});
+            error?fail++:ok++;
+          }
+        }catch(e){ fail++; }
+      }
+      toast(`Importação concluída: ${ok} ok, ${fail} com erro.`, fail?'warn':'');
+      await loadLookups(); await loadComponentes();
+      btn.textContent='Concluído'; 
+    });
+  });
+}
+
+/* ================= CONFIGURAÇÕES ================= */
+function renderConfig(view){
+  view.innerHTML = `
+  ${viewHead('Sistema','Configurações')}
+  <div class="tabs">
+    <div class="tab active" data-t="tipos">Tipos</div>
+    <div class="tab" data-t="modelos">Modelos</div>
+    <div class="tab" data-t="maquinas">Máquinas</div>
+    <div class="tab" data-t="frentes">Frentes</div>
+    <div class="tab" data-t="limite">Limite de descarte</div>
+  </div>
+  <div id="cfg-content"></div>`;
+  const content = $('#cfg-content');
+
+  function simpleList(table, label){
+    content.innerHTML = `
+    <div class="card" style="max-width:560px">
+      <div class="card-pad">
+        <div class="row" style="align-items:flex-end">
+          <div class="field" style="flex:1"><label>Novo(a) ${label}</label><input id="cfg-new"></div>
+          <div class="field" style="max-width:0"><button class="btn btn-primary" id="cfg-add">${svgi('plus')}</button></div>
+        </div>
+        <table><tbody id="cfg-tbody"></tbody></table>
+      </div>
+    </div>`;
+    const arr = table==='tipos_componentes'?S.tipos:table==='frentes'?S.frentes:[];
+    const draw = ()=>{ $('#cfg-tbody').innerHTML = arr.map(x=>`<tr><td>${escapeHtml(x.nome)}</td><td style="width:40px;text-align:right"><span class="icon-btn btn-sm" data-id="${x.id}" style="width:26px;height:26px">${svgi('trash')}</span></td></tr>`).join('')||'<tr><td><div class="empty">Nenhum registro.</div></td></tr>'; 
+      $$('#cfg-tbody [data-id]').forEach(b=>b.addEventListener('click', async ()=>{
+        if(!confirm('Remover este item?')) return;
+        const {error} = await sb.from(table).delete().eq('id',b.dataset.id);
+        if(error){ toast('Não é possível remover: pode estar em uso.','err'); return; }
+        await loadLookups(); route();
+      }));
+    };
+    draw();
+    $('#cfg-add').addEventListener('click', async ()=>{
+      const nome = $('#cfg-new').value.trim(); if(!nome) return;
+      const {error} = await sb.from(table).insert({nome});
+      if(error){ toast('Erro: '+error.message,'err'); return; }
+      await loadLookups(); route();
+    });
+  }
+  function modelosTab(){
+    content.innerHTML = `
+    <div class="card" style="max-width:640px">
+      <div class="card-pad">
+        <div class="row" style="align-items:flex-end">
+          <div class="field" style="flex:1"><label>Nome do modelo</label><input id="md-nome" placeholder="Ex: Motor Charlin 24"></div>
+          <div class="field" style="flex:1"><label>Tipo</label><select id="md-tipo">${S.tipos.map(t=>`<option value="${t.id}">${escapeHtml(t.nome)}</option>`).join('')}</select></div>
+          <div class="field" style="max-width:130px"><label>Valor ref. (R$)</label><input type="number" id="md-valor" step="0.01"></div>
+          <div class="field" style="max-width:0"><button class="btn btn-primary" id="md-add">${svgi('plus')}</button></div>
+        </div>
+        <table><thead><tr><th>Modelo</th><th>Tipo</th><th>Valor</th><th></th></tr></thead><tbody id="md-tbody"></tbody></table>
+      </div>
+    </div>`;
+    const draw=()=>{ $('#md-tbody').innerHTML = S.modelos.map(m=>`<tr><td>${escapeHtml(m.nome)}</td><td>${escapeHtml(tipoNome(m.tipo_id))}</td><td class="mono">${fmtMoney(m.valor_referencia)}</td><td><span class="icon-btn btn-sm" data-id="${m.id}" style="width:26px;height:26px">${svgi('trash')}</span></td></tr>`).join('')||'<tr><td colspan="4"><div class="empty">Nenhum modelo cadastrado.</div></td></tr>';
+      $$('#md-tbody [data-id]').forEach(b=>b.addEventListener('click', async ()=>{
+        if(!confirm('Remover este modelo?')) return;
+        await sb.from('modelos_componentes').delete().eq('id',b.dataset.id);
+        await loadLookups(); route();
+      }));
+    };
+    draw();
+    $('#md-add').addEventListener('click', async ()=>{
+      const nome=$('#md-nome').value.trim(); if(!nome) return;
+      const {error} = await sb.from('modelos_componentes').insert({nome, tipo_id:$('#md-tipo').value, valor_referencia:Number($('#md-valor').value||0)});
+      if(error){ toast('Erro: '+error.message,'err'); return; }
+      await loadLookups(); route();
+    });
+  }
+  function maquinasTab(){
+    content.innerHTML = `
+    <div class="card" style="max-width:600px">
+      <div class="card-pad">
+        <div class="row" style="align-items:flex-end">
+          <div class="field" style="flex:1"><label>Nome da máquina</label><input id="mq-nome"></div>
+          <div class="field" style="flex:1"><label>Frota</label><select id="mq-frota">${S.frotas.map(f=>`<option value="${f.id}">${escapeHtml(f.nome)}</option>`).join('')}</select></div>
+          <div class="field" style="max-width:0"><button class="btn btn-primary" id="mq-add">${svgi('plus')}</button></div>
+        </div>
+        <table><thead><tr><th>Máquina</th><th>Frota</th><th></th></tr></thead><tbody id="mq-tbody"></tbody></table>
+      </div>
+    </div>`;
+    const draw=()=>{ $('#mq-tbody').innerHTML = S.maquinas.map(m=>`<tr><td>${escapeHtml(m.nome)}</td><td>${escapeHtml(frotaNome(m.frota_id))}</td><td><span class="icon-btn btn-sm" data-id="${m.id}" style="width:26px;height:26px">${svgi('trash')}</span></td></tr>`).join('')||'<tr><td colspan="3"><div class="empty">Nenhuma máquina cadastrada.</div></td></tr>';
+      $$('#mq-tbody [data-id]').forEach(b=>b.addEventListener('click', async ()=>{ if(!confirm('Remover?'))return; await sb.from('maquinas').delete().eq('id',b.dataset.id); await loadLookups(); route(); }));
+    };
+    draw();
+    $('#mq-add').addEventListener('click', async ()=>{
+      const nome=$('#mq-nome').value.trim(); if(!nome) return;
+      const {error} = await sb.from('maquinas').insert({nome, frota_id:$('#mq-frota').value||null});
+      if(error){ toast('Erro: '+error.message,'err'); return; }
+      await loadLookups(); route();
+    });
+  }
+  function limiteTab(){
+    content.innerHTML = `
+    <div class="card" style="max-width:480px"><div class="card-pad">
+      <div class="field"><label>Limite de custo para análise de descarte</label>
+        <div class="chip-row" id="lim-chips">${[30,40,50,60,70,80,90,100].map(v=>`<div class="filter-chip ${v===S.limitePercent?'active':''}" data-v="${v}">${v}%</div>`).join('')}</div>
+      </div>
+      <div class="field"><label>Ou valor personalizado (%)</label><input type="number" id="lim-custom" value="${S.limitePercent}"></div>
+      <button class="btn btn-primary btn-block" id="lim-save">${svgi('check')}Salvar limite</button>
+      <div class="hint" style="margin-top:8px">Este percentual nunca descarta automaticamente — apenas emite alerta para decisão manual.</div>
+    </div></div>`;
+    $$('#lim-chips .filter-chip').forEach(ch=>ch.addEventListener('click',()=>{ $('#lim-custom').value=ch.dataset.v; }));
+    $('#lim-save').addEventListener('click', async ()=>{
+      const val = Number($('#lim-custom').value);
+      if(!val||val<=0){ toast('Informe um percentual válido.','err'); return; }
+      const {error} = await sb.from('configuracoes').upsert({chave:'limite_descarte_percentual', valor:String(val)});
+      if(error){ toast('Erro: '+error.message,'err'); return; }
+      S.limitePercent = val; $('#limite-chip').textContent=val+'%';
+      toast('Limite atualizado.');
+    });
+  }
+  $$('.tab').forEach(t=>t.addEventListener('click',()=>{
+    $$('.tab').forEach(x=>x.classList.remove('active')); t.classList.add('active');
+    const map={tipos:()=>simpleList('tipos_componentes','tipo'),modelos:modelosTab,maquinas:maquinasTab,frentes:()=>simpleList('frentes','frente'),limite:limiteTab};
+    map[t.dataset.t]();
+  }));
+  simpleList('tipos_componentes','tipo');
+}
+
+/* ================= BUSCA GLOBAL ================= */
+let searchTimer;
+$('#global-search').addEventListener('input', (e)=>{
+  clearTimeout(searchTimer);
+  const q = e.target.value.trim().toLowerCase();
+  const box = $('#search-results');
+  if(!q){ box.style.display='none'; return; }
+  searchTimer = setTimeout(()=>{
+    const hits = [];
+    S.componentes.forEach(c=>{
+      const hay = (c.agregado_numero+' '+tipoNome(c.tipo_id)+' '+modeloNome(c.modelo_id)).toLowerCase();
+      if(hay.includes(q)) hits.push({title:'Agregado '+c.agregado_numero, sub:tipoNome(c.tipo_id)+' · '+modeloNome(c.modelo_id), href:'#agregado/'+c.id});
+    });
+    S.pecas.forEach(p=>{ if((p.codigo+' '+p.descricao).toLowerCase().includes(q)) hits.push({title:p.descricao, sub:'Peça · '+p.codigo, href:'#pecas'}); });
+    S.frotas.forEach(f=>{ if(f.nome.toLowerCase().includes(q)) hits.push({title:'Frota '+f.nome, sub:'Frota', href:'#frotas'}); });
+    box.innerHTML = hits.length ? hits.slice(0,10).map(h=>`<div class="search-hit" data-href="${h.href}"><div class="sh-t">${escapeHtml(h.title)}</div><div class="sh-s">${escapeHtml(h.sub)}</div></div>`).join('') : `<div class="search-hit">Nenhum resultado.</div>`;
+    box.style.display='block';
+    $$('.search-hit[data-href]',box).forEach(el=>el.addEventListener('click',()=>{ location.hash=el.dataset.href; box.style.display='none'; e.target.value=''; }));
+  },150);
+});
+document.addEventListener('click',(e)=>{ if(!e.target.closest('.searchbox') && !e.target.closest('.search-results')) $('#search-results').style.display='none'; });
+
+/* ================= BOOT ================= */
+async function boot(){
+  $('#boot').style.display='flex';
+  $('#login-screen').style.display='none';
+  applyTheme();
+  await loadLookups();
+  await loadComponentes();
+  $('#user-email').textContent = S.user.email;
+  $('#user-avatar').textContent = (S.user.email||'?').slice(0,2).toUpperCase();
+  $('#user-chip').title='Clique para sair';
+  $('#user-chip').addEventListener('click', ()=>{ if(confirm('Sair do sistema?')) doLogout(); });
+  $('#boot').style.display='none';
+  $('#app').classList.add('ready');
+  route();
+}
+
+(async function init(){
+  applyTheme();
+  const {data:{session}} = await sb.auth.getSession();
+  if(session){ S.user = session.user; await boot(); }
+  else { $('#boot').style.display='none'; $('#login-screen').style.display='block'; }
+})();
+</script>
+</body>
+</html>
